@@ -1,17 +1,3 @@
-<style>
-    div{
-        background: #222;
-    }
-
-    #main{
-        background: #334;
-        padding: 1rem;
-        border-radius: 20px;
-        color: #ddd;
-    }
-</style>
-<div id="main">
-
 # YouTube Playlist BGM Player
 This is a basic background music player made with C++ to play YouTube Playlists in the background.
 
@@ -31,4 +17,3 @@ This is a basic background music player made with C++ to play YouTube Playlists 
     <li>Deleting Playlists</li>
     <li>Shuffling Playlists</li>
 </ul>
-</div>
