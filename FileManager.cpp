@@ -336,7 +336,7 @@ void FileManager::playPlaylist()
     } // do not delete else if
     else if (compareStrings("n", doTheShuffle) || compareStrings("no", doTheShuffle))
     {
-        shuffle = true;
+        shuffle = false;
     }
     else
     {
