@@ -345,7 +345,8 @@ void FileManager::playPlaylist()
         return;
     }
 
-    std::string command = "mpv " + playlists[chosenPlaylist - 1] + " --no-video --loop-playlist";
+    // mpv <link> --no-video --loop-playlist --shuffle
+    std::string command = "depends/mpv " + playlists[chosenPlaylist - 1] + " --no-video --loop-playlist --script-opts=ytdl_hook-ytdl_path=depends/youtube-dl";
     if (shuffle)
     {
         command += " --shuffle";
