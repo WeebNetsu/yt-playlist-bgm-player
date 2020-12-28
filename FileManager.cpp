@@ -1,7 +1,11 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
-#include <string>
+#include <sys/stat.h>  // to check if directories exists and stuff
+#include <sys/types.h> // for creating directories
+// #include <string>
+#include <unistd.h>  // to get username
+#include <algorithm> // so we can remove \n from end of strings
 
 #include "FileManager.hpp"
 
@@ -237,7 +241,6 @@ void FileManager::removePlaylist()
         {
             playlistNames.push_back(line.substr(0, split));
             playlistLinks.push_back(line.substr(split + 1, 999));
-            // std::cout << playlistNames[0] << std::endl;
         }
     }
 
@@ -502,9 +505,24 @@ std::ofstream FileManager::openFile()
     std::_Exit(0);
 }
 
+std::string FileManager::getUsernameLinux()
+{
+    char username[255];
+    FILE *name;
+    name = popen("whoami", "r");
+    fgets(username, sizeof(username), name);
+    // std::cout << "Name is : " << username;
+    pclose(name);
+    std::string uname = username;
+    return uname;
+}
+
 std::string FileManager::getFileName()
 {
-    return this->fileName;
+    std::string fileName = "/home/" + getUsernameLinux();
+    fileName.erase(std::remove(fileName.begin(), fileName.end(), '\n'), fileName.end());
+    fileName += "/.ytbgmpcli/" + this->fileName;
+    return fileName;
 }
 
 bool FileManager::checkFileEmpty() // checks if file is empty
@@ -518,9 +536,30 @@ bool FileManager::checkFileEmpty() // checks if file is empty
 
 void FileManager::createFile()
 {
-    std::ofstream fFile;
-    fFile.open(getFileName(), std::ios::app | std::ios::out);
-    fFile.close();
+    std::string location = "/home/" + getUsernameLinux();
+    location.erase(std::remove(location.begin(), location.end(), '\n'), location.end());
+    location += "/.ytbgmpcli";
+
+    const char *loc = location.c_str();
+
+    struct stat _st = {0};
+    if (stat(loc, &_st) == -1) // if location does not exist
+    {
+        std::cout << "Could not find .ytbgmpcli folder. Creating folder." << std::endl;
+
+        mkdir(loc, 0777);
+    }
+
+    struct stat _st2 = {0};
+
+    if (stat(getFileName().c_str(), &_st2) == -1) // if custom links file does not exist
+    {
+        std::cout << "Could not find customs file. Creating file." << std::endl;
+
+        std::ofstream fFile(getFileName().c_str());
+        fFile << "";
+        fFile.close();
+    }
 }
 
 FileManager::~FileManager()

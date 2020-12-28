@@ -34,6 +34,7 @@ public:
     bool compareStrings(std::string str1, std::string str2);
     bool checkPlaylistExists(std::string playlistName);
     int inputSafe(int num);
+    std::string getUsernameLinux();
 };
 
 #endif // FILE_MANAGER
