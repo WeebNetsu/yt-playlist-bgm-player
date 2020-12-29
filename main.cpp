@@ -86,17 +86,16 @@ void displayHelp()
 {
     std::cout << "Welcome!" << std::endl;
     std::cout << "This CLI application is intended to help you play music in the background from YouTube." << std::endl;
-    std::cout << "The application is fairly easy to use, but let's first look at the requirements:" << std::endl;
-    std::cout << "\t1. You need mkv installed and should be able to call it from the terminal (to\n\tcheck if you can, run: mpv --version, an error would appear if you don't have it\n\tor can't call it from the terminal)\n"
+    std::cout << "Now, let's look at the menu and talk about it:\n"
               << std::endl;
-    std::cout << "\t2. You need youtube-dl, or even better, youtube-dlc... If you have youtube-dlc,\n\tjust rename the executible (which should be in /usr/bin/ if on Linux) to\n\t'youtube-dl'\n"
+    std::cout << "\tPlay Playlist: This option will read from the playlists saved inside\n\t'custom-playlists.txt' and display the options to you. You can choose a\n\tplaylist, and if everyting has been inserted correctly and the playlist still\n\texists, it will play the playlist (looping the playlist)\n"
               << std::endl;
-
-    std::cout << "Now, let's look at the menu and talk about it:" << std::endl;
-    std::cout << "\tPlay Playlist: This option will read from the playlists saved inside\n\t'custom-playlists.txt' and display the options to you. You can choose a\n\tplaylist, and if everyting has been inserted correctly and the playlist still\n\texists, it will play the playlist (looping the playlist)" << std::endl;
-    std::cout << "\tAdd Playlist: If you want to add a new playlist to your list (please limit it to\n\t98 playlists). You can insert a playlist name which should NOT contain any\n\tspaces or '~'. Then you can insert a playlist link copied from YouTube. The\n\tplaylist should be added to the file with no problem." << std::endl;
-    std::cout << "\tRemove Playlist: If there is a playlist you don't like using, just remove it\n\tfrom the list. If you want to listen to it after deleting it, you'll have to add\n\tit again." << std::endl;
-    std::cout << "\tEdit Playlist: Did you perhaps insert the wrong name or link for your playlist?\n\tOr did the link change? This option will allow you to edit the playlist name and\n\tlink." << std::endl;
+    std::cout << "\tAdd Playlist: If you want to add a new playlist to your list (please limit it to\n\t98 playlists). You can insert a playlist name which should NOT contain any '~'.\n\tThen you can insert a playlist link copied from YouTube. The\n\tplaylist should be added to the file with no problem.\n"
+              << std::endl;
+    std::cout << "\tRemove Playlist: If there is a playlist you don't like using, just remove it\n\tfrom the list. If you want to listen to it after deleting it, you'll have to add\n\tit again.\n"
+              << std::endl;
+    std::cout << "\tEdit Playlist: Did you perhaps insert the wrong name or link for your playlist?\n\tOr did the link change? This option will allow you to edit the playlist name and\n\tlink.\n"
+              << std::endl;
     std::cout << "\tHelp: Display some help you may need.\n"
               << std::endl;
 

@@ -414,7 +414,9 @@ void FileManager::addPlaylist()
     std::cout << "Please enter a name for the new playlist(type cancel to cancel): ";
     // std::string playlistName = inputSafe(playlistName);
     std::string playlistName;
-    std::cin >> playlistName;
+    // std::cin >> playlistName;
+    std::cin.ignore();
+    std::getline(std::cin, playlistName);
 
     if (compareStrings(playlistName, "cancel"))
     {
