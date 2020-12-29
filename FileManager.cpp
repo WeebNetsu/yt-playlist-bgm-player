@@ -98,7 +98,8 @@ void FileManager::updatePlaylistName(int playlistNumber)
 
     std::cout << "New name for playlist (cancel to cancel): ";
     std::string newPlaylistName;
-    std::cin >> newPlaylistName;
+    std::cin.ignore();
+    std::getline(std::cin, newPlaylistName);
 
     if (compareStrings(newPlaylistName, "cancel"))
     {
