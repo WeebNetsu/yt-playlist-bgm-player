@@ -1,13 +1,13 @@
 # YouTube Playlist BGM Player
 This is a basic background music player made with C++ to play YouTube Playlists in the background.
 
-## Requirements
-
-<ul>
-    <li>Stable Internet Connection</li>
-    <li><a href="https://mpv.io/" target="_blank">MPV Media Player</a></li>
-    <li><a href="https://youtube-dl.org/" target="_blank">youtube-dl</a> or (<i>recommended</i>) <a href="https://github.com/blackjack4494/yt-dlc" target="_blank">youtube-dlc</a></li>
-</ul>
+## How to run
+<i>Note: You should have a stable internet connection.</i>
+<br>
+Clone or download the files and make sure the install.sh file is executable with:<br>
+<code><pre>chmod +x install.sh</pre></code>
+Run the install.sh file and you're ready to run the application! To run the application, execute the following command in your terminal:
+<code><pre>bgmplayer</pre></code>
 
 ## Features
 <ul>
