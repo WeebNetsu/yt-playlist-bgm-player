@@ -22,15 +22,22 @@ void FileManager::updatePlaylistLink(int playlistNumber)
 
     std::vector<std::string> playlistNames;
     std::vector<std::string> playlistLinks;
+    std::vector<bool> local;
     std::string line;
-    bool local = false;
+    // std::cout << "wtf" << std::endl;
+    // bool local = false;
     while (getline(fPlaylistFile, line))
     {
         std::size_t split = line.find('~'); //finds '~'
         if (split == -1)
         {
             split = line.find('`');
-            local = true;
+            // local = true;
+            local.push_back(true);
+        }
+        else
+        {
+            local.push_back(false);
         }
 
         // playlists.push_back(line.substr(0, split));
@@ -74,7 +81,9 @@ void FileManager::updatePlaylistLink(int playlistNumber)
             playlistLinks[i] = newPlaylistLink;
         }
 
-        if (local)
+        std::cout << local.at(i) << std::endl;
+
+        if (local.at(i))
         {
             newList += playlistNames.at(i) + "`" + playlistLinks.at(i) + "\n";
         }
@@ -96,8 +105,8 @@ void FileManager::updatePlaylistName(int playlistNumber)
 
     std::vector<std::string> playlistNames;
     std::vector<std::string> playlistLinks;
+    std::vector<bool> local;
     std::string line;
-    bool local = false;
     while (getline(fPlaylistFile, line))
     {
         std::size_t split = line.find('~'); //finds '~'
@@ -105,7 +114,11 @@ void FileManager::updatePlaylistName(int playlistNumber)
         if (split == -1)
         {
             split = line.find('`');
-            local = true;
+            local.push_back(true);
+        }
+        else
+        {
+            local.push_back(false);
         }
 
         // playlists.push_back(line.substr(0, split));
@@ -153,7 +166,7 @@ void FileManager::updatePlaylistName(int playlistNumber)
             playlistNames[i] = newPlaylistName;
         }
 
-        if (local)
+        if (local.at(i))
         {
             newList += playlistNames.at(i) + "`" + playlistLinks.at(i) + "\n";
         }
@@ -429,6 +442,8 @@ void FileManager::playPlaylist()
     }
 
     std::string command;
+
+    // std::cout << playlist << std::endl;
     if (playlist[0] == '/')
     {
         playlist.insert(playlist.find(" "), "\\");
