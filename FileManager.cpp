@@ -3,7 +3,7 @@
 #include <vector>
 #include <sys/stat.h>  // to check if directories exists and stuff
 #include <sys/types.h> // for creating directories
-// #include <string>
+// #include <string.h>
 #include <unistd.h>  // to get username
 #include <algorithm> // so we can remove \n from end of strings
 
@@ -23,9 +23,15 @@ void FileManager::updatePlaylistLink(int playlistNumber)
     std::vector<std::string> playlistNames;
     std::vector<std::string> playlistLinks;
     std::string line;
+    bool local = false;
     while (getline(fPlaylistFile, line))
     {
         std::size_t split = line.find('~'); //finds '~'
+        if (split == -1)
+        {
+            split = line.find('`');
+            local = true;
+        }
 
         // playlists.push_back(line.substr(0, split));
         if ((line.substr(0, split).length() > 1))
@@ -38,9 +44,12 @@ void FileManager::updatePlaylistLink(int playlistNumber)
 
     fPlaylistFile.close();
 
-    std::cout << "New link for playlist (cancel to cancel): ";
+    std::cout << "New link/location for playlist (cancel to cancel): ";
     std::string newPlaylistLink;
-    std::cin >> newPlaylistLink;
+    // std::cin >> newPlaylistLink;
+
+    std::cin.ignore();
+    std::getline(std::cin, newPlaylistLink);
 
     if (compareStrings(newPlaylistLink, "cancel"))
     {
@@ -65,7 +74,14 @@ void FileManager::updatePlaylistLink(int playlistNumber)
             playlistLinks[i] = newPlaylistLink;
         }
 
-        newList += playlistNames.at(i) + "~" + playlistLinks.at(i) + "\n";
+        if (local)
+        {
+            newList += playlistNames.at(i) + "`" + playlistLinks.at(i) + "\n";
+        }
+        else
+        {
+            newList += playlistNames.at(i) + "~" + playlistLinks.at(i) + "\n";
+        }
     }
 
     fPlaylistFileRewrite << newList;
@@ -81,9 +97,16 @@ void FileManager::updatePlaylistName(int playlistNumber)
     std::vector<std::string> playlistNames;
     std::vector<std::string> playlistLinks;
     std::string line;
+    bool local = false;
     while (getline(fPlaylistFile, line))
     {
         std::size_t split = line.find('~'); //finds '~'
+
+        if (split == -1)
+        {
+            split = line.find('`');
+            local = true;
+        }
 
         // playlists.push_back(line.substr(0, split));
         if ((line.substr(0, split).length() > 1))
@@ -130,7 +153,14 @@ void FileManager::updatePlaylistName(int playlistNumber)
             playlistNames[i] = newPlaylistName;
         }
 
-        newList += playlistNames.at(i) + "~" + playlistLinks.at(i) + "\n";
+        if (local)
+        {
+            newList += playlistNames.at(i) + "`" + playlistLinks.at(i) + "\n";
+        }
+        else
+        {
+            newList += playlistNames.at(i) + "~" + playlistLinks.at(i) + "\n";
+        }
     }
 
     fPlaylistFileRewrite << newList;
@@ -147,19 +177,19 @@ void FileManager::updatePlaylist()
         return;
     }
 
-    std::vector<std::string> modifyOptions = {"Playlist Name", "Playlist Link"};
+    std::vector<std::string> modifyOptions = {"Playlist Name", "Playlist Link/Location"};
 
     std::cout << "Playlists you have:" << std::endl;
     std::vector<std::string> playlists = getAndShowPlaylists(); // get playlists
     std::cout << "(Playlist to edit) > ";
     int chosenPlaylist = inputSafe(chosenPlaylist);
-    if ((chosenPlaylist > playlists.size()) && (chosenPlaylist != 99))
+    if ((chosenPlaylist > playlists.size()) && (chosenPlaylist != 0))
     {
         std::cout << "Error, could not find playlist... Does it exist?" << std::endl;
         updatePlaylist();
         return;
     }
-    else if (chosenPlaylist == 99)
+    else if (chosenPlaylist == 0)
     {
         return;
     }
@@ -169,7 +199,7 @@ void FileManager::updatePlaylist()
     {
         std::cout << i + 1 << ". " << modifyOptions.at(i) << std::endl;
     }
-    std::cout << "99. Cancel" << std::endl;
+    std::cout << "0. Cancel" << std::endl;
 
     std::cout << "(What to edit) > ";
 
@@ -183,7 +213,7 @@ void FileManager::updatePlaylist()
     case 2:
         updatePlaylistLink(chosenPlaylist);
         break;
-    case 99:
+    case 0:
         std::cout << "Playlist not updated" << std::endl;
         return;
         break;
@@ -207,13 +237,13 @@ void FileManager::removePlaylist()
     std::vector<std::string> playlists = getAndShowPlaylists(); // get playlists
     std::cout << "(Playlist to remove) > ";
     int chosenPlaylist = inputSafe(chosenPlaylist);
-    if ((chosenPlaylist > playlists.size()) && (chosenPlaylist != 99))
+    if ((chosenPlaylist > playlists.size()) && (chosenPlaylist != 0))
     {
         std::cout << "Error, could not find playlist... Does it exist?" << std::endl;
         removePlaylist();
         return;
     }
-    else if (chosenPlaylist == 99)
+    else if (chosenPlaylist == 0)
     {
         return;
     }
@@ -233,9 +263,16 @@ void FileManager::removePlaylist()
     std::vector<std::string> playlistNames;
     std::vector<std::string> playlistLinks;
     std::string line;
+    bool local = false;
     while (getline(fPlaylistFile, line))
     {
         std::size_t split = line.find('~'); //finds '~'
+
+        if (split == -1)
+        {
+            split = line.find('`');
+            local = true;
+        }
 
         // playlists.push_back(line.substr(0, split));
         if ((line.substr(0, split).length() > 1))
@@ -263,7 +300,14 @@ void FileManager::removePlaylist()
             continue;
         }
 
-        newList += playlistNames.at(i) + "~" + playlistLinks.at(i) + "\n";
+        if (local)
+        {
+            newList += playlistNames.at(i) + "`" + playlistLinks.at(i) + "\n";
+        }
+        else
+        {
+            newList += playlistNames.at(i) + "~" + playlistLinks.at(i) + "\n";
+        }
     }
 
     fPlaylistFileRewrite << newList;
@@ -280,29 +324,50 @@ std::vector<std::string> FileManager::getAndShowPlaylists()
     std::vector<std::string> playlists;
     std::cout << std::endl;
     int count = 1;
+    bool local = false;
     while (getline(fPlaylistFile, line))
     {
         std::size_t split = line.find('~'); //finds '~'
 
-        // playlists.push_back(line.substr(0, split));
-        if ((line.substr(0, split).length() > 1) && (count < 99))
+        if (split == -1)
         {
-            playlists.push_back(line.substr(split + 1, 999));
+            split = line.find('`');
+            local = true;
+        }
+
+        // playlists.push_back(line.substr(0, split));
+        if ((line.substr(0, split).length() > 1))
+        {
+            if (local)
+            {
+                // if the playlist is stored locally, it will start with a '/'
+                // a local location starting with //home/whatever will not cause any errors
+                // in a linux enviroment and will start from root
+                playlists.push_back("/" + line.substr(split + 1, 999));
+            }
+            else
+            {
+                playlists.push_back(line.substr(split + 1, 999));
+            }
+
             std::cout << count << ". " << line.substr(0, split) << std::endl;
             count++;
         }
-
-        if (count >= 99)
-        {
-            std::cout << "You have more playlists, but you have reached your limits of 98. Please delete some playlists." << std::endl;
-            break;
-        }
     }
-    std::cout << "99. Cancel" << std::endl;
+    std::cout << "0. Cancel" << std::endl;
 
     fPlaylistFile.close();
 
     return playlists;
+}
+void FileManager::displayPlayerControls()
+{
+    std::cout << "\nPlayer Controls:" << std::endl;
+    std::cout << "\t[SPACE] - Pause\t\t\tm - Mute" << std::endl;
+    std::cout << "\t[Right Arrow] - Skip 10 Seconds\t[Left Arrow] - Rewind 10 Seconds" << std::endl;
+    std::cout << "\t[Up Arrow] - Skip 1 Minute\t[Down Arrow] - Rewind 1 Minute" << std::endl;
+    std::cout << "\t> - Next Song\t\t\t< - Previous Song" << std::endl;
+    std::cout << "\tq - Quit" << std::endl;
 }
 
 void FileManager::playPlaylist()
@@ -313,25 +378,25 @@ void FileManager::playPlaylist()
         return;
     }
 
+    displayPlayerControls();
+
     std::vector<std::string> playlists = getAndShowPlaylists(); // get links
     std::cout << "(Playlist to play) > ";
     int chosenPlaylist = inputSafe(chosenPlaylist);
-    if ((chosenPlaylist > playlists.size()) && (chosenPlaylist != 99))
+    if ((chosenPlaylist > playlists.size()) && (chosenPlaylist != 0))
     {
         std::cout << "Error, could not find playlist... Does it exist?" << std::endl;
         playPlaylist();
         return;
     }
-    else if (chosenPlaylist == 99)
+    else if (chosenPlaylist == 0)
     {
         return;
     }
-    // std::cout << "sfxnjsdpiojnfiwesnfkjnwdbjhbdx" << std::endl;
 
     std::cout << "Would you like to shuffle the playlist? [y/n]: ";
     std::string doTheShuffle;
     std::cin >> doTheShuffle;
-    // std::cin >> shuffleAns;
     bool shuffle = false;
 
     if (compareStrings("y", doTheShuffle) || compareStrings("yes", doTheShuffle))
@@ -344,19 +409,51 @@ void FileManager::playPlaylist()
     }
     else
     {
-        std::cout << "Invalid answer..." << std::endl;
+        std::cout << "Invalid option..." << std::endl;
         playPlaylist();
         return;
     }
 
     // mpv <link> --no-video --loop-playlist --shuffle
-    std::string command = "mpv " + playlists[chosenPlaylist - 1] + " --no-video --loop-playlist --script-opts=ytdl_hook-ytdl_path=/usr/local/bin/youtube-dlc";
+    std::string playlist = playlists[chosenPlaylist - 1];
+    // thank you: http://www.cplusplus.com/forum/beginner/50209/#:~:text=If%20you%20just%20want%20to,%5Cv%22%20)%20%2B%201)%3B
+    while (playlist.size())
+    {
+        //the number 33 refers to ascii character 33... the first printable character :)
+        if (playlist[0] < 33)
+            playlist.erase(playlist.begin()); //remove all leading whitespace
+        else if (playlist[playlist.size() - 1] < 33)
+            playlist.erase(playlist.size() - 1); //remove all trailing whitespace
+        else
+            break;
+    }
+
+    std::string command;
+    if (playlist[0] == '/')
+    {
+        playlist.insert(playlist.find(" "), "\\");
+        command = "mpv " + playlist.append("/*") + " --no-video --loop-playlist";
+    }
+    else
+    {
+        command = "mpv " + playlist + " --no-video --loop-playlist --script-opts=ytdl_hook-ytdl_path=/usr/local/bin/youtube-dlc";
+    }
+
     if (shuffle)
     {
         command += " --shuffle";
     }
 
-    std::cout << "Playlist will now start to play (this may take a while to start)... To exit press: q" << std::endl;
+    if (playlist[0] == '/') // just for formatting
+    {
+        std::cout << "Playlist will now start to play (this may take a while to start)... To exit press: q\n"
+                  << std::endl;
+    }
+    else
+    {
+        std::cout << "Playlist will now start to play (this may take a while to start)... To exit press: q" << std::endl;
+    }
+
     const char *execute = command.c_str();
 
     system(execute);
@@ -368,9 +465,13 @@ bool FileManager::checkPlaylistExists(std::string playlistName)
     std::ifstream fPlaylistFile(getFileName()); //gets input from the file
 
     while (getline(fPlaylistFile, line))
-    {                                       //reads line from file and puts it in variable
-        std::size_t split = line.find('~'); //finds ','
-        playlist = line.substr(0, split);   //copies username
+    { //reads line from file and puts it in variable
+        std::size_t split = line.find('~');
+        if (split == -1)
+        {
+            split = line.find('`');
+        }
+        playlist = line.substr(0, split); //copies username
 
         if (compareStrings(playlist, playlistName))
         {
@@ -386,6 +487,12 @@ bool FileManager::checkPlaylistExists(std::string playlistName)
         if (playlistName[i] == '~')
         {
             std::cout << "Invalid character found '~'" << std::endl;
+
+            return true;
+        }
+        else if (playlistName[i] == '`')
+        {
+            std::cout << "Invalid character found '`'" << std::endl;
 
             return true;
         }
@@ -432,17 +539,13 @@ void FileManager::addPlaylist()
         return;
     }
 
-    std::cout << "Please enter the link to playlist (type cancel to cancel): ";
-    // std::string playlistLink = inputSafe(playlistLink);
-    std::string playlistLink;
-    std::cin >> playlistLink;
-
-    if (compareStrings(playlistLink, "cancel"))
-    {
-        std::cout << "--- Operation Canceled ---" << std::endl;
-
-        return;
-    }
+    std::cout << "Where is your playlist? " << std::endl;
+    std::cout << "1. On my machine (local) " << std::endl;
+    std::cout << "2. On YouTube (online) " << std::endl;
+    std::cout << "0. Cancel " << std::endl;
+    std::cout << "> ";
+    int location;
+    std::cin >> location;
 
     std::ofstream fCustomPlaylists;
     fCustomPlaylists.open(getFileName(), std::ios::app | std::ios::out);
@@ -453,12 +556,67 @@ void FileManager::addPlaylist()
         return;
     }
 
-    std::string newListItem = "\n" + playlistName + "~" + playlistLink;
+    if (location == 1)
+    {
+        std::cout << "You're about to add a location. This is how your location should look: /home/netsu/my music\n";
+        std::cout << "To get the above results, you can type pwd (linux) to get the location to a directory you're in\n";
+        std::cout << "Please do not add any '\\', '\"' or '\'' to the location.\n"
+                  << std::endl;
+        // std::cout << "NOTE: Max file path length is 60 characters (including spaces and special characters).\n"
+        // << std::endl;
+        std::cout << "Please enter the location of the folder (from root(/)) (cancel to cancel): ";
+        std::string playlistLocation;
+        std::cin.ignore();
+        std::getline(std::cin, playlistLocation);
 
-    fCustomPlaylists << newListItem;
+        if (compareStrings(playlistLocation, "cancel"))
+        {
+            std::cout << "--- Operation Canceled ---" << std::endl;
+            fCustomPlaylists.close();
+
+            return;
+        }
+
+        if (playlistLocation.length() > 60)
+        {
+            std::cout << "Path to playlist is too long. Try moving it to a folder closer to root" << std::endl;
+            fCustomPlaylists.close();
+
+            return;
+        }
+
+        std::string newListItem = "\n" + playlistName + "`" + playlistLocation;
+
+        fCustomPlaylists << newListItem;
+    }
+    else if (location == 2)
+    {
+        std::cout << "Please enter the link to playlist (type cancel to cancel): ";
+        // std::string playlistLink = inputSafe(playlistLink);
+        std::string playlistLink;
+        std::cin >> playlistLink;
+
+        if (compareStrings(playlistLink, "cancel"))
+        {
+            std::cout << "--- Operation Canceled ---" << std::endl;
+            fCustomPlaylists.close();
+
+            return;
+        }
+
+        std::string newListItem = "\n" + playlistName + "~" + playlistLink;
+
+        fCustomPlaylists << newListItem;
+    }
+    else
+    {
+        fCustomPlaylists.close();
+        std::cout << "Cancel" << std::endl;
+
+        return;
+    }
 
     fCustomPlaylists.close();
-
     std::cout << "--- Playlist Added ---" << std::endl;
 }
 

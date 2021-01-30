@@ -35,6 +35,8 @@ public:
     bool checkPlaylistExists(std::string playlistName);
     int inputSafe(int num);
     std::string getUsernameLinux();
+
+    void displayPlayerControls();
 };
 
 #endif // FILE_MANAGER

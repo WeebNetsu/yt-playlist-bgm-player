@@ -6,7 +6,7 @@
 
 void displayMenu(std::vector<std::string> menuOptions);
 void processAnswer(int option, std::vector<std::string> menuOptions, FileManager *fm);
-void displayHelp();
+void displayHelp(FileManager *fm);
 bool running = true;
 
 int main(int argc, char const *argv[])
@@ -65,11 +65,11 @@ void processAnswer(int option, std::vector<std::string> menuOptions, FileManager
 
     case 5:
         std::cout << std::endl;
-        displayHelp();
+        displayHelp(fm);
         std::cout << std::endl;
         break;
 
-    case 99:
+    case 0:
         std::cout << "Exit" << std::endl;
         running = false;
         break;
@@ -82,7 +82,7 @@ void processAnswer(int option, std::vector<std::string> menuOptions, FileManager
     }
 }
 
-void displayHelp()
+void displayHelp(FileManager *fm)
 {
     std::cout << "Welcome!" << std::endl;
     std::cout << "This CLI application is intended to help you play music in the background from YouTube." << std::endl;
@@ -90,7 +90,9 @@ void displayHelp()
               << std::endl;
     std::cout << "\tPlay Playlist: This option will read from the playlists saved inside\n\t'custom-playlists.txt' and display the options to you. You can choose a\n\tplaylist, and if everyting has been inserted correctly and the playlist still\n\texists, it will play the playlist (looping the playlist)\n"
               << std::endl;
-    std::cout << "\tAdd Playlist: If you want to add a new playlist to your list (please limit it to\n\t98 playlists). You can insert a playlist name which should NOT contain any '~'.\n\tThen you can insert a playlist link copied from YouTube. The\n\tplaylist should be added to the file with no problem.\n"
+    std::cout << "\tAdd Playlist (online): If you want to add a new playlist to your list You can\n\tinsert a playlist name which should NOT contain any '~' or '`'. Then you can\n\tinsert a playlist link copied from YouTube. The playlist should be added to the\n\tfile with no problem.\n"
+              << std::endl;
+    std::cout << "\tAdd Playlist (local): If you want to add a new playlist to your list You can\n\tinsert a playlist name which should NOT contain any '`' or '~'. Then you can\n\tinsert a playlist location, copied from a pwd result you typed in the terminal\n\t(go to folder with music in it. Type pwd. Copy the result and paste it into the\n\tlocal playlist location option). The playlist should be added to the file with no\n\tproblem.\n"
               << std::endl;
     std::cout << "\tRemove Playlist: If there is a playlist you don't like using, just remove it\n\tfrom the list. If you want to listen to it after deleting it, you'll have to add\n\tit again.\n"
               << std::endl;
@@ -99,7 +101,9 @@ void displayHelp()
     std::cout << "\tHelp: Display some help you may need.\n"
               << std::endl;
 
-    std::cout << "Some problems may still happen, so if it does, edit the code yourself if you have the\nsource code or remove the problem from the 'custom-playlists.txt' file(if the problem\nis from the playlists file), or contact me on Github: https://github.com/WeebNetsu" << std::endl;
+    fm->displayPlayerControls();
+
+    std::cout << "\nSome problems may still happen, so if it does, edit the code yourself if you have the\nsource code or remove the problem from the 'custom-playlists.txt' file (if the problem\nis from the playlists file), or contact me on Github: https://github.com/WeebNetsu" << std::endl;
 }
 
 void displayMenu(std::vector<std::string> menuOptions)
@@ -111,5 +115,5 @@ void displayMenu(std::vector<std::string> menuOptions)
         std::cout << i + 1 << ". " << menuOptions.at(i) << std::endl;
     }
 
-    std::cout << "99. Exit" << std::endl;
+    std::cout << "0. Exit" << std::endl;
 }
