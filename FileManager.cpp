@@ -16,6 +16,128 @@ FileManager::FileManager(std::string fileName)
     createFile();
 }
 
+std::vector<std::string> FileManager::getPlaylistsDontShow()
+{
+    std::string line;
+    std::ifstream fPlaylistFile(getFileName()); //gets input from the file
+
+    std::vector<std::string> playlists;
+    int count = 1;
+    bool local = false;
+    while (getline(fPlaylistFile, line))
+    {
+        std::size_t split = line.find('~'); //finds '~'
+
+        if (split == -1)
+        {
+            split = line.find('`');
+            local = true;
+        }
+
+        if ((line.substr(0, split).length() > 1))
+        {
+            local ? playlists.push_back("/" + line.substr(split + 1, 999)) : playlists.push_back(line.substr(split + 1, 999));
+
+            count++;
+        }
+    }
+
+    fPlaylistFile.close();
+
+    return playlists;
+}
+
+void FileManager::instantPlayPlaylist(int playlistToPlay, bool shuffle)
+{
+    if (checkFileEmpty())
+    {
+        std::cout << "No playlists have been added..." << std::endl;
+        return;
+    }
+
+    displayPlayerControls();
+
+    std::vector<std::string> playlists = getPlaylistsDontShow(); // get links with no output
+    if ((playlistToPlay > playlists.size()) && (playlistToPlay != 0))
+    {
+        std::cout << "Error, could not find playlist... Does it exist?" << std::endl;
+        playPlaylist();
+        return;
+    }
+    else if (playlistToPlay == 0)
+    {
+        return;
+    }
+
+    // std::cout << "Would you like to shuffle the playlist? [y/n]: ";
+    // std::string doTheShuffle;
+    // std::cin >> doTheShuffle;
+    // bool shuffle = true;
+
+    // if (compareStrings("y", doTheShuffle) || compareStrings("yes", doTheShuffle))
+    // {
+    //     shuffle = true;
+    // } // do not delete else if
+    // else if (compareStrings("n", doTheShuffle) || compareStrings("no", doTheShuffle))
+    // {
+    //     shuffle = false;
+    // }
+    // else
+    // {
+    //     std::cout << "Invalid option..." << std::endl;
+    //     playPlaylist();
+    //     return;
+    // }
+
+    // mpv <link> --no-video --loop-playlist --shuffle
+    std::string playlist = playlists[playlistToPlay - 1];
+    // thank you: http://www.cplusplus.com/forum/beginner/50209/#:~:text=If%20you%20just%20want%20to,%5Cv%22%20)%20%2B%201)%3B
+    while (playlist.size())
+    {
+        //the number 33 refers to ascii character 33... the first printable character :)
+        if (playlist[0] < 33)
+            playlist.erase(playlist.begin()); //remove all leading whitespace
+        else if (playlist[playlist.size() - 1] < 33)
+            playlist.erase(playlist.size() - 1); //remove all trailing whitespace
+        else
+            break;
+    }
+
+    std::string command;
+
+    // std::cout << playlist << std::endl;
+    if (playlist[0] == '/')
+    {
+        playlist.insert(playlist.find(" "), "\\");
+        command = "mpv " + playlist.append("/*") + " --no-video --loop-playlist";
+    }
+    else
+    {
+        command = "mpv " + playlist + " --no-video --loop-playlist --script-opts=ytdl_hook-ytdl_path=/usr/local/bin/youtube-dlc";
+    }
+
+    if (shuffle)
+    {
+        command += " --shuffle";
+    }
+
+    if (playlist[0] == '/') // just for formatting
+    {
+        std::cout << "Playlist will now start to play (this may take a while to start)... To exit press: q\n"
+                  << std::endl;
+    }
+    else
+    {
+        std::cout << "Playlist will now start to play (this may take a while to start)... To exit press: q" << std::endl;
+    }
+
+    // std::cout << command << std::endl;
+
+    const char *execute = command.c_str();
+
+    system(execute);
+}
+
 void FileManager::updatePlaylistLink(int playlistNumber)
 {
     std::ifstream fPlaylistFile(getFileName()); //gets input from the file
@@ -373,6 +495,7 @@ std::vector<std::string> FileManager::getAndShowPlaylists()
 
     return playlists;
 }
+
 void FileManager::displayPlayerControls()
 {
     std::cout << "\nPlayer Controls:" << std::endl;
@@ -698,6 +821,14 @@ std::string FileManager::getFileName()
     std::string fileName = "/home/" + getUsernameLinux();
     fileName.erase(std::remove(fileName.begin(), fileName.end(), '\n'), fileName.end());
     fileName += "/.ytbgmpcli/" + this->fileName;
+    return fileName;
+}
+
+std::string FileManager::getTempFileName(std::string tempFileName)
+{
+    std::string fileName = "/home/" + getUsernameLinux();
+    fileName.erase(std::remove(fileName.begin(), fileName.end(), '\n'), fileName.end());
+    fileName += "/.ytbgmpcli/" + tempFileName;
     return fileName;
 }
 

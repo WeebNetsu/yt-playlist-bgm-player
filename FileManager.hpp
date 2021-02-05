@@ -15,6 +15,7 @@ public:
 
     //getters
     std::string getFileName();
+    std::string getTempFileName(std::string tempFileName);
 
     //aux
     bool checkFileEmpty();
@@ -26,11 +27,13 @@ public:
     void playPlaylist();
     void removePlaylist();
     void updatePlaylist();
+    void instantPlayPlaylist(int playlistToPlay, bool shuffle);
 
     void updatePlaylistName(int playlistNumber);
     void updatePlaylistLink(int playlistNumber);
 
     std::vector<std::string> getAndShowPlaylists();
+    std::vector<std::string> getPlaylistsDontShow();
     bool compareStrings(std::string str1, std::string str2);
     bool checkPlaylistExists(std::string playlistName);
     int inputSafe(int num);
