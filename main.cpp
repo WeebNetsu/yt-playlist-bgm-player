@@ -19,7 +19,7 @@ int main(int argc, char const *argv[])
 
     std::vector<std::string> flagOptions = {"-no-shuffle"};
     // single flag options will not execute any other commands other than itself.
-    std::vector<std::string> singleFlagOptions = {"--help"};
+    std::vector<std::string> singleFlagOptions = {"--help", "--list"};
     std::vector<std::string> arguments;
 
     for (int i = 1; i < argc; i++) // so we don't receive the file name
@@ -58,6 +58,12 @@ int main(int argc, char const *argv[])
                     if (i == singleFlagOptions.at(0)) // --help
                     {
                         displayHelp(&fm);
+                    }
+                    else if (i == singleFlagOptions.at(1)) // --list
+                    {
+                        std::cout << "Your Playlists:" << std::endl;
+
+                        fm.showPlaylists();
                     }
                 }
             }

@@ -32,25 +32,25 @@ Note: this only works on Linux, I'm planning to give it support for other OSs in
 
 <i>Note: You should have a stable internet connection to use the installer and YouTube playlist player.</i>
 
-Clone or download the files and make sure the debian_based_installer.sh file is executable with:<br>
-<code><pre>chmod +x debian_based_installer.sh</pre></code>
-Run the debian_based_installer.sh file (debian only) and you're ready to run the application! To run the application, execute the following command in your terminal:
+Clone or download the files and make sure the ubuntu_based_installer.sh file is executable with:<br>
+<code><pre>chmod +x ubuntu_based_installer.sh</pre></code>
+Run the ubuntu_based_installer.sh file (debian/ubuntu based distros only) and you're ready to run the application! To run the application, execute the following command in your terminal:
 <code><pre>bgmplayer</pre></code>
 
-If you don't have a Debian based linux, you can compile the code (or use the existing output file) and just mimic everything happening in the debian_based_installer.sh, but modified for your system (so not apt, but pacman or whatever package manager you use).
+<b>If you don't have an Ubuntu based Linux distro</b>, you can compile the code (or use the existing "bgmplayer" file) and just mimic everything happening in the ubuntu_based_installer.sh, but modified for your system (so not apt, but pacman or whatever package manager you use).
 
 <span id="howToUpdate"></span>
 
 ## How to update
 
-If the application has a new version, you can redownload the source code and run the debian_based_installer.sh file. It will update whatever should be updated. If you don't have a Debian based system, just move the output file to a bin folder or add it to path for the latest version (you can compile it yourself if you want)
+If the application has a new version, you can redownload the source code and run the ubuntu_based_installer.sh file. It will update whatever should be updated. If you don't have a Ubuntu based system, just move the "bgmplayer" file to the $HOME/bin folder or add it to path for the latest version (you can compile it yourself if you want)
 
 <span id="compilingTheCode"></span>
 
 ## Compiling the code
 
 If you want to compile the source code yourself, you'll need the dependencies and g++.
-To compile: <code>g++ main.cpp FileManager.cpp -o output</code>
+To compile: <code>g++ main.cpp FileManager.cpp -o bgmplayer</code>
 
 <span id="dependencies"></span>
 
@@ -175,6 +175,10 @@ Example of a single answer flag: <code>bgmplayer --help</code>
     <tr>
         <td>--help</td>
         <td>Displays help</td>
+    </tr>
+    <tr>
+        <td>--list</td>
+        <td>Displays all playlists</td>
     </tr>
 </table>
 

@@ -3,11 +3,12 @@
 # echo "Creating Directory in PATH"
 # sudo mkdir /usr/bin/ytpbgmp
 
-echo "Adding executable file to PATH"
-cp output bgmplayer
-sudo mv bgmplayer /usr/bin/
+echo "Adding executable file to $HOME/bin"
+# cp output bgmplayer
+[ ! -d "$HOME/bin" ] && echo "Could not find $HOME/bin folder... Creating it." && mkdir -p $HOME/bin 
+[ -d "$HOME/bin" ] && cp bgmplayer $HOME/bin
 
-echo "Installing dependencies. (apt & wget)"
+echo "Installing dependencies. (apt & wget) (will need sudo permissions)"
 # cp -r depends bgmplayer_depends
 # sudo mv bgmplayer_depends /usr/bin/ || rm -r bgmplayer_depends
 sudo add-apt-repository ppa:mc3man/mpv-tests -y && sudo apt update && sudo apt-get remove mpv -y && sudo apt install mpv -y 

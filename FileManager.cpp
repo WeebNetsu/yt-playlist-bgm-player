@@ -451,6 +451,31 @@ void FileManager::removePlaylist()
     std::cout << "--- Playlist Deleted ---" << std::endl;
 }
 
+void FileManager::showPlaylists()
+{
+    std::string line;
+    std::ifstream fPlaylistFile(getFileName()); //gets input from the file
+
+    int count = 1;
+    while (getline(fPlaylistFile, line))
+    {
+        std::size_t split = line.find('~'); //finds '~'
+
+        if (split == -1)
+        {
+            split = line.find('`');
+        }
+
+        if ((line.substr(0, split).length() > 1))
+        {
+            std::cout << count << ". " << line.substr(0, split) << std::endl;
+            count++;
+        }
+    }
+
+    fPlaylistFile.close();
+}
+
 std::vector<std::string> FileManager::getAndShowPlaylists()
 {
     std::string line;

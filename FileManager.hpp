@@ -33,7 +33,9 @@ public:
     void updatePlaylistLink(int playlistNumber);
 
     std::vector<std::string> getAndShowPlaylists();
+    void showPlaylists();
     std::vector<std::string> getPlaylistsDontShow();
+
     bool compareStrings(std::string str1, std::string str2);
     bool checkPlaylistExists(std::string playlistName);
     int inputSafe(int num);
