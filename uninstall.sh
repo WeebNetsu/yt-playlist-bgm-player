@@ -1,7 +1,7 @@
 #! /bin/bash
 
 echo "Removing executable file to PATH"
-sudo rm /usr/bin/bgmplayer
+rm $HOME/bin/bgmplayer
 
 # Since you may use youtube-dlc or mpv, I will not remove it
 # echo "Removing dependencies."

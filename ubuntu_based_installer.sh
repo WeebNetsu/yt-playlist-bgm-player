@@ -4,6 +4,7 @@
 # sudo mkdir /usr/bin/ytpbgmp
 
 echo "Adding executable file to $HOME/bin"
+chmod +x bgmplayer
 # cp output bgmplayer
 [ ! -d "$HOME/bin" ] && echo "Could not find $HOME/bin folder... Creating it." && mkdir -p $HOME/bin 
 [ -d "$HOME/bin" ] && cp bgmplayer $HOME/bin
