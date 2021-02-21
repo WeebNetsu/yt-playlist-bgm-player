@@ -8,6 +8,7 @@
 #include <algorithm> // so we can remove \n from end of strings
 
 #include "FileManager.hpp"
+#include "commonMethods.hpp"
 
 FileManager::FileManager(std::string fileName)
 {
@@ -177,10 +178,11 @@ void FileManager::updatePlaylistLink(int playlistNumber)
     std::string newPlaylistLink;
     // std::cin >> newPlaylistLink;
 
-    std::cin.ignore();
+    // std::cin.ignore();
+    cmds::clearInput();
     std::getline(std::cin, newPlaylistLink);
 
-    if (compareStrings(newPlaylistLink, "cancel"))
+    if (cmds::compareStrings(newPlaylistLink, "cancel"))
     {
         std::cout << "--- Operation Canceled ---" << std::endl;
 
@@ -256,10 +258,11 @@ void FileManager::updatePlaylistName(int playlistNumber)
 
     std::cout << "New name for playlist (cancel to cancel): ";
     std::string newPlaylistName;
-    std::cin.ignore();
+    // std::cin.ignore();
+    cmds::clearInput();
     std::getline(std::cin, newPlaylistName);
 
-    if (compareStrings(newPlaylistName, "cancel"))
+    if (cmds::compareStrings(newPlaylistName, "cancel"))
     {
         std::cout << "--- Operation Canceled ---" << std::endl;
 
@@ -317,7 +320,7 @@ void FileManager::updatePlaylist()
     std::cout << "Playlists you have:" << std::endl;
     std::vector<std::string> playlists = getAndShowPlaylists(); // get playlists
     std::cout << "(Playlist to edit) > ";
-    int chosenPlaylist = inputSafe(chosenPlaylist);
+    int chosenPlaylist = cmds::inputSafe(chosenPlaylist);
     if ((chosenPlaylist > playlists.size()) && (chosenPlaylist != 0))
     {
         std::cout << "Error, could not find playlist... Does it exist?" << std::endl;
@@ -338,7 +341,7 @@ void FileManager::updatePlaylist()
 
     std::cout << "(What to edit) > ";
 
-    int chosenOption = inputSafe(chosenOption);
+    int chosenOption = cmds::inputSafe(chosenOption);
 
     switch (chosenOption)
     {
@@ -371,7 +374,7 @@ void FileManager::removePlaylist()
 
     std::vector<std::string> playlists = getAndShowPlaylists(); // get playlists
     std::cout << "(Playlist to remove) > ";
-    int chosenPlaylist = inputSafe(chosenPlaylist);
+    int chosenPlaylist = cmds::inputSafe(chosenPlaylist);
     if ((chosenPlaylist > playlists.size()) && (chosenPlaylist != 0))
     {
         std::cout << "Error, could not find playlist... Does it exist?" << std::endl;
@@ -387,7 +390,7 @@ void FileManager::removePlaylist()
     std::string confirmDelete;
     std::cin >> confirmDelete;
 
-    if (!compareStrings("y", confirmDelete))
+    if (!cmds::compareStrings("y", confirmDelete))
     {
         std::cout << "Playlist not deleted" << std::endl;
         return;
@@ -484,10 +487,11 @@ std::vector<std::string> FileManager::getAndShowPlaylists()
     std::vector<std::string> playlists;
     std::cout << std::endl;
     int count = 1;
-    bool local = false;
     while (getline(fPlaylistFile, line))
     {
+        bool local = false;
         std::size_t split = line.find('~'); //finds '~'
+        // std::cout << split << std::endl;
 
         if (split == -1)
         {
@@ -531,6 +535,27 @@ void FileManager::displayPlayerControls()
     std::cout << "\tq - Quit" << std::endl;
 }
 
+bool FileManager::shufflePlaylist()
+{
+    std::cout << "Would you like to shuffle the playlists? [y/n]: ";
+    std::string doTheShuffle;
+    std::cin >> doTheShuffle;
+
+    if (cmds::compareStrings("y", doTheShuffle) || cmds::compareStrings("yes", doTheShuffle))
+    {
+        return true;
+    } // do not delete else if
+    else if (cmds::compareStrings("n", doTheShuffle) || cmds::compareStrings("no", doTheShuffle))
+    {
+        return false;
+    }
+    else
+    {
+        std::cout << "Invalid option..." << std::endl;
+        return shufflePlaylist();
+    }
+}
+
 void FileManager::playPlaylist()
 {
     if (checkFileEmpty())
@@ -543,7 +568,7 @@ void FileManager::playPlaylist()
 
     std::vector<std::string> playlists = getAndShowPlaylists(); // get links
     std::cout << "(Playlist to play) > ";
-    int chosenPlaylist = inputSafe(chosenPlaylist);
+    int chosenPlaylist = cmds::inputSafe(chosenPlaylist);
     if ((chosenPlaylist > playlists.size()) && (chosenPlaylist != 0))
     {
         std::cout << "Error, could not find playlist... Does it exist?" << std::endl;
@@ -555,29 +580,14 @@ void FileManager::playPlaylist()
         return;
     }
 
-    std::cout << "Would you like to shuffle the playlist? [y/n]: ";
-    std::string doTheShuffle;
-    std::cin >> doTheShuffle;
-    bool shuffle = false;
-
-    if (compareStrings("y", doTheShuffle) || compareStrings("yes", doTheShuffle))
-    {
-        shuffle = true;
-    } // do not delete else if
-    else if (compareStrings("n", doTheShuffle) || compareStrings("no", doTheShuffle))
-    {
-        shuffle = false;
-    }
-    else
-    {
-        std::cout << "Invalid option..." << std::endl;
-        playPlaylist();
-        return;
-    }
+    bool shuffle = shufflePlaylist();
 
     // mpv <link> --no-video --loop-playlist --shuffle
     std::string playlist = playlists[chosenPlaylist - 1];
-    // thank you: http://www.cplusplus.com/forum/beginner/50209/#:~:text=If%20you%20just%20want%20to,%5Cv%22%20)%20%2B%201)%3B
+
+    /*
+    thank you: http://www.cplusplus.com/forum/beginner/50209/#:~:text=If%20you%20just%20want%20to,%5Cv%22%20)%20%2B%201)%3B
+    */
     while (playlist.size())
     {
         //the number 33 refers to ascii character 33... the first printable character :)
@@ -622,6 +632,139 @@ void FileManager::playPlaylist()
     system(execute);
 }
 
+void FileManager::multiPlayPlaylists()
+{
+    if (checkFileEmpty())
+    {
+        std::cout << "No playlists have been added..." << std::endl;
+        return;
+    }
+
+    displayPlayerControls();
+
+    std::vector<std::string> playlists = getAndShowPlaylists(); // get links
+    std::cout << "(Playlists to play) > ";
+    std::string itemsToPlay;
+    // std::cin.clear();
+    // std::cin.ignore(100, '\n');
+    cmds::clearInput();
+    std::getline(std::cin, itemsToPlay);
+    // std::cout
+    // << itemsToPlay << ": " << itemsToPlay.length() << std::endl;
+
+    if (itemsToPlay.length() < 3)
+    {
+        std::cout << "Detected less than 2 playlists. Aborting." << std::endl;
+        return;
+    }
+    itemsToPlay += " ";
+
+    std::vector<int> lists;
+    std::string num;
+    for (char i : itemsToPlay)
+    {
+        if (i == ' ')
+        {
+            lists.push_back(std::stoi(num));
+
+            num = "";
+        }
+        else
+        {
+            num += i;
+        }
+    }
+
+    for (int playlistNum : lists)
+    {
+
+        if ((playlistNum > playlists.size()) && (playlistNum != 0))
+        {
+            std::cout << "Error, could not find playlist nr: " << playlistNum << "... Does it exist?" << std::endl;
+            multiPlayPlaylists();
+            return;
+        }
+        else if (playlistNum == 0)
+        {
+            std::cout << "No playlist '0', cancel." << std::endl;
+            return;
+        }
+    }
+
+    bool shuffle = shufflePlaylist();
+
+    // mpv <link> --no-video --loop-playlist --shuffle
+    std::vector<std::string> cleanList;
+    // std::string playlist = playlists[chosenPlaylist - 1];
+    for (int num : lists)
+    {
+        std::string playlist = playlists[num - 1];
+
+        while (playlist.size())
+        {
+            //the number 33 refers to ascii character 33... the first printable character
+            if (playlist[0] < 33)
+            {
+                playlist.erase(playlist.begin()); //remove all leading whitespace
+            }
+            else if (playlist[playlist.size() - 1] < 33)
+            {
+                playlist.erase(playlist.size() - 1); //remove all trailing whitespace
+            }
+            else
+            {
+                if (playlist[0] == '/')
+                {
+                    playlist.insert(playlist.find(" "), "\\");
+                    cleanList.push_back(playlist.append("/*"));
+                }
+                else
+                {
+                    cleanList.push_back(playlist);
+                }
+                break;
+            }
+        }
+    }
+
+    std::string command;
+
+    std::string playlistsCommand = "";
+    for (std::string playlist : cleanList)
+    {
+        playlistsCommand += playlist + " ";
+    }
+    cmds::clearInput();
+
+    std::string loop;
+    std::cout << "Loop playlists? [y/n]: ";
+    std::cin >> loop;
+
+    if (cmds::compareStrings("y", loop) || cmds::compareStrings("yes", loop))
+    {
+        command = "mpv " + playlistsCommand + " --no-video --loop-playlist --script-opts=ytdl_hook-ytdl_path=/usr/local/bin/youtube-dlc";
+    } // do not delete else if
+    else if (cmds::compareStrings("n", loop) || cmds::compareStrings("no", loop))
+    {
+        command = "mpv " + playlistsCommand + " --no-video --script-opts=ytdl_hook-ytdl_path=/usr/local/bin/youtube-dlc";
+    }
+    else
+    {
+        std::cout << "Invalid option..." << std::endl;
+        multiPlayPlaylists();
+        return;
+    }
+
+    if (shuffle)
+    {
+        command += " --shuffle";
+    }
+
+    const char *execute = command.c_str();
+
+    system(execute);
+}
+
 bool FileManager::checkPlaylistExists(std::string playlistName)
 {
     std::string line, playlist;
@@ -636,7 +779,7 @@ bool FileManager::checkPlaylistExists(std::string playlistName)
         }
         playlist = line.substr(0, split); //copies username
 
-        if (compareStrings(playlist, playlistName))
+        if (cmds::compareStrings(playlist, playlistName))
         {
             fPlaylistFile.close();
             std::cout << "That playlist already exists (name dulpicate)... Please try again\n"
@@ -665,20 +808,20 @@ bool FileManager::checkPlaylistExists(std::string playlistName)
     return false;
 }
 
-int FileManager::inputSafe(int num)
-{
-    std::cin >> num;
+// int FileManager::inputSafe(int num)
+// {
+//     std::cin >> num;
 
-    while (!std::cin) // make sure input isn't nothing
-    {
-        std::cout << "\nInvalid value, please retype the correct value: ";
-        std::cin.clear();
-        std::cin.ignore(100, '\n'); //moves 200 lines then goes to the next line
-        std::cin >> num;
-    }
+//     while (!std::cin) // make sure input isn't nothing
+//     {
+//         std::cout << "\nInvalid value, please retype the correct value: ";
+//         std::cin.clear();
+//         std::cin.ignore(100, '\n'); //moves 200 lines then goes to the next line
+//         std::cin >> num;
+//     }
 
-    return num;
-}
+//     return num;
+// }
 
 void FileManager::addPlaylist()
 {
@@ -686,10 +829,11 @@ void FileManager::addPlaylist()
     // std::string playlistName = inputSafe(playlistName);
     std::string playlistName;
     // std::cin >> playlistName;
-    std::cin.ignore();
+    // std::cin.ignore();
+    cmds::clearInput();
     std::getline(std::cin, playlistName);
 
-    if (compareStrings(playlistName, "cancel"))
+    if (cmds::compareStrings(playlistName, "cancel"))
     {
         std::cout << "--- Operation Canceled ---" << std::endl;
 
@@ -729,10 +873,11 @@ void FileManager::addPlaylist()
         // << std::endl;
         std::cout << "Please enter the location of the folder (from root(/)) (cancel to cancel): ";
         std::string playlistLocation;
-        std::cin.ignore();
+        // std::cin.ignore();
+        cmds::clearInput();
         std::getline(std::cin, playlistLocation);
 
-        if (compareStrings(playlistLocation, "cancel"))
+        if (cmds::compareStrings(playlistLocation, "cancel"))
         {
             std::cout << "--- Operation Canceled ---" << std::endl;
             fCustomPlaylists.close();
@@ -759,7 +904,7 @@ void FileManager::addPlaylist()
         std::string playlistLink;
         std::cin >> playlistLink;
 
-        if (compareStrings(playlistLink, "cancel"))
+        if (cmds::compareStrings(playlistLink, "cancel"))
         {
             std::cout << "--- Operation Canceled ---" << std::endl;
             fCustomPlaylists.close();
@@ -783,32 +928,32 @@ void FileManager::addPlaylist()
     std::cout << "--- Playlist Added ---" << std::endl;
 }
 
-bool FileManager::compareStrings(std::string str1, std::string str2)
-{
-    int str1_length = str1.length();
-    int str2_length = str2.length();
+// bool FileManager::compareStrings(std::string str1, std::string str2)
+// {
+//     int str1_length = str1.length();
+//     int str2_length = str2.length();
 
-    if (str1_length == str2_length)
-    {
-        for (int i = 0; i < str1_length; i++)
-        {
-            if (!(str1[i] == str2[i]))
-            {
-                return false;
-            }
+//     if (str1_length == str2_length)
+//     {
+//         for (int i = 0; i < str1_length; i++)
+//         {
+//             if (!(str1[i] == str2[i]))
+//             {
+//                 return false;
+//             }
 
-            if (str1[i] == '~' || str2[i] == '~')
-            {
-                std::cout << "'~' is an invalid character" << std::endl;
-                return true;
-            }
-        }
+//             if (str1[i] == '~' || str2[i] == '~')
+//             {
+//                 std::cout << "'~' is an invalid character" << std::endl;
+//                 return true;
+//             }
+//         }
 
-        return true;
-    }
+//         return true;
+//     }
 
-    return false;
-}
+//     return false;
+// }
 
 void FileManager::closeFile(std::ofstream fFile)
 {

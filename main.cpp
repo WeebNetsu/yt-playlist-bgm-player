@@ -11,7 +11,7 @@ bool running = true;
 
 int main(int argc, char const *argv[])
 {
-    std::vector<std::string> menuOptions = {"Play Playlist", "Add Playlist", "Remove Playlist", "Edit Playlist", "Help"};
+    std::vector<std::string> menuOptions = {"Play Playlist", "Multi-Play Playlists", "Add Playlist", "Remove Playlist", "Edit Playlist", "Help"};
 
     std::cout << "Welcome!" << std::endl;
 
@@ -19,6 +19,7 @@ int main(int argc, char const *argv[])
 
     std::vector<std::string> flagOptions = {"-no-shuffle"};
     // single flag options will not execute any other commands other than itself.
+    // we use vector since we can for through the array and check if anything is found
     std::vector<std::string> singleFlagOptions = {"--help", "--list"};
     std::vector<std::string> arguments;
 
@@ -148,21 +149,26 @@ void processAnswer(int option, std::vector<std::string> menuOptions, FileManager
         break;
 
     case 2:
+        std::cout << "Multi-Play Playlists" << std::endl;
+        fm->multiPlayPlaylists();
+        break;
+
+    case 3:
         std::cout << "Add Playlist" << std::endl;
         fm->addPlaylist();
         break;
 
-    case 3:
+    case 4:
         std::cout << "Remove Playlist" << std::endl;
         fm->removePlaylist();
         break;
 
-    case 4:
+    case 5:
         std::cout << "Update Playlist" << std::endl;
         fm->updatePlaylist();
         break;
 
-    case 5:
+    case 6:
         std::cout << std::endl;
         displayHelp(fm);
         std::cout << std::endl;
@@ -202,12 +208,21 @@ void displayHelp(FileManager *fm)
     // std::cout << "\tFlags: There are 3 types of flags you can add when running bgmplayer,\n\tsingle-answer flags (--), multi-answer flags (-) and the playlist flag (playlist\n\tnumber). These flags can be used to play playlists without loading the rest of\n\tthe interface. You can add the playlist number to the end of the command\n\t(eg. bgmplayer 1) and it will instantly play and shuffle the playlist. You can\n\tuse -no-shuffle to not shuffle the playlist (so: bgmplayer 1 -no-shuffle). So\n\tfar we've talked abut multi-answer flags, flags where you can add multiple\n\tflags. Single-answer flags are different in the sense that they use 2 '--'\n\tinstead of 1 '-' and that there can only be 1 flag if it's a single-answer flag\n\t(eg. bgmplayer --help). You can find out more about flags in the Github page." << std::endl;
     std::string helpText = "";
     helpText += "This CLI application is intended to help you play music in the background from YouTube.\n";
+
     helpText += "Now, let's look at the menu and talk about it:\n";
+
     helpText += "\n\tPlay Playlist: This option will read from the playlists saved inside\n\t'custom-playlists.txt' and display the options to you. You can choose a\n\tplaylist, and if everyting has been inserted correctly and the playlist still\n\texists, it will play the playlist (looping the playlist)\n";
+
+    helpText += "\n\tMulti-Play Playlist: This option will allow you to listen to multiple playlists.\n\tPlaylist numbers are separated by spaces (so: 4 6 9 will play playlists 4, 6 and\n\t9).\n";
+
     helpText += "\n\tAdd Playlist (online): If you want to add a new playlist to your list You can\n\tinsert a playlist name which should NOT contain any '~' or '`'. Then you can\n\tinsert a playlist link copied from YouTube. The playlist should be added to the\n\tfile with no problem.\n";
+
     helpText += "\n\tRemove Playlist: If there is a playlist you don't like using, just remove it\n\tfrom the list. If you want to listen to it after deleting it, you'll have to add\n\tit again.\n";
+
     helpText += "\n\tEdit Playlist: Did you perhaps insert the wrong name or link for your playlist?\n\tOr did the link change? This option will allow you to edit the playlist name and\n\tlink.\n";
+
     helpText += "\n\tFlags: There are 3 types of flags you can add when running bgmplayer,\n\tsingle-answer flags (--), multi-answer flags (-) and the playlist flag (playlist\n\tnumber). These flags can be used to play playlists without loading the rest of\n\tthe interface. You can add the playlist number to the end of the command\n\t(eg. bgmplayer 1) and it will instantly play and shuffle the playlist. You can\n\tuse -no-shuffle to not shuffle the playlist (so: bgmplayer 1 -no-shuffle). So\n\tfar we've talked abut multi-answer flags, flags where you can add multiple\n\tflags. Single-answer flags are different in the sense that they use 2 '--'\n\tinstead of 1 '-' and that there can only be 1 flag if it's a single-answer flag\n\t(eg. bgmplayer --help). You can find out more about flags in the Github page.\n";
+
     helpText += "\nPress 'q' to exit help.";
 
     std::ofstream fHelpFile;

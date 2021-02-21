@@ -25,6 +25,7 @@ public:
 
     void addPlaylist();
     void playPlaylist();
+    void multiPlayPlaylists();
     void removePlaylist();
     void updatePlaylist();
     void instantPlayPlaylist(int playlistToPlay, bool shuffle);
@@ -36,9 +37,10 @@ public:
     void showPlaylists();
     std::vector<std::string> getPlaylistsDontShow();
 
-    bool compareStrings(std::string str1, std::string str2);
+    // bool compareStrings(std::string str1, std::string str2);
     bool checkPlaylistExists(std::string playlistName);
-    int inputSafe(int num);
+    bool shufflePlaylist();
+    // int inputSafe(int num);
     std::string getUsernameLinux();
 
     void displayPlayerControls();
