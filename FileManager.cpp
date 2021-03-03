@@ -48,7 +48,98 @@ std::vector<std::string> FileManager::getPlaylistsDontShow()
     return playlists;
 }
 
-void FileManager::instantPlayPlaylist(int playlistToPlay, bool shuffle)
+void FileManager::instantMultiPlayPlaylist(std::vector<int> playlistsToPlay, bool shuffle, bool loop)
+{
+    if (checkFileEmpty())
+    {
+        std::cout << "No playlists have been added..." << std::endl;
+        return;
+    }
+
+    displayPlayerControls();
+
+    std::vector<std::string> playlists = getPlaylistsDontShow(); // get links
+
+    if (playlistsToPlay.size() < 2)
+    {
+        std::cout << "Detected less than 2 playlists. Aborting." << std::endl;
+        return;
+    }
+
+    for (int playlistNum : playlistsToPlay)
+    {
+        if ((playlistNum > playlists.size()) && (playlistNum != 0))
+        {
+            std::cout << "Error, could not find playlist nr: " << playlistNum << "... Does it exist?" << std::endl;
+            return;
+        }
+        else if (playlistNum == 0)
+        {
+            std::cout << "No playlist '0', cancel." << std::endl;
+            return;
+        }
+    }
+
+    // mpv <link> --no-video --loop-playlist --shuffle
+    std::vector<std::string> cleanList;
+
+    // std::string playlist = playlists[chosenPlaylist - 1];
+    for (int num : playlistsToPlay)
+    {
+        std::string playlist = playlists[num - 1];
+
+        while (playlist.size())
+        {
+            //the number 33 refers to ascii character 33... the first printable character
+            if (playlist[0] < 33)
+            {
+                playlist.erase(playlist.begin()); //remove all leading whitespace
+            }
+            else if (playlist[playlist.size() - 1] < 33)
+            {
+                playlist.erase(playlist.size() - 1); //remove all trailing whitespace
+            }
+            else
+            {
+                if (playlist[0] == '/')
+                {
+                    playlist.insert(playlist.find(" "), "\\");
+                    cleanList.push_back(playlist.append("/*"));
+                }
+                else
+                {
+                    cleanList.push_back(playlist);
+                }
+                break;
+            }
+        }
+    }
+
+    std::string command;
+
+    std::string playlistsCommand = "";
+    for (std::string playlist : cleanList)
+    {
+        playlistsCommand += playlist + " ";
+    }
+
+    command = "mpv " + playlistsCommand + " --no-video --script-opts=ytdl_hook-ytdl_path=/usr/local/bin/youtube-dlc";
+    if (shuffle)
+    {
+        command += " --shuffle";
+    }
+
+    if (loop)
+    {
+        command += " --loop-playlist";
+    }
+
+    const char *execute = command.c_str();
+
+    system(execute);
+}
+
+void FileManager::instantPlayPlaylist(int playlistToPlay, bool shuffle, bool loop)
 {
     if (checkFileEmpty())
     {
@@ -70,29 +161,11 @@ void FileManager::instantPlayPlaylist(int playlistToPlay, bool shuffle)
         return;
     }
 
-    // std::cout << "Would you like to shuffle the playlist? [y/n]: ";
-    // std::string doTheShuffle;
-    // std::cin >> doTheShuffle;
-    // bool shuffle = true;
-
-    // if (compareStrings("y", doTheShuffle) || compareStrings("yes", doTheShuffle))
-    // {
-    //     shuffle = true;
-    // } // do not delete else if
-    // else if (compareStrings("n", doTheShuffle) || compareStrings("no", doTheShuffle))
-    // {
-    //     shuffle = false;
-    // }
-    // else
-    // {
-    //     std::cout << "Invalid option..." << std::endl;
-    //     playPlaylist();
-    //     return;
-    // }
-
     // mpv <link> --no-video --loop-playlist --shuffle
     std::string playlist = playlists[playlistToPlay - 1];
-    // thank you: http://www.cplusplus.com/forum/beginner/50209/#:~:text=If%20you%20just%20want%20to,%5Cv%22%20)%20%2B%201)%3B
+    /* 
+        thank you: http://www.cplusplus.com/forum/beginner/50209/#:~:text=If%20you%20just%20want%20to,%5Cv%22%20)%20%2B%201)%3B
+    */
     while (playlist.size())
     {
         //the number 33 refers to ascii character 33... the first printable character :)
@@ -110,16 +183,21 @@ void FileManager::instantPlayPlaylist(int playlistToPlay, bool shuffle)
     if (playlist[0] == '/')
     {
         playlist.insert(playlist.find(" "), "\\");
-        command = "mpv " + playlist.append("/*") + " --no-video --loop-playlist";
+        command = "mpv " + playlist.append("/*") + " --no-video";
     }
     else
     {
-        command = "mpv " + playlist + " --no-video --loop-playlist --script-opts=ytdl_hook-ytdl_path=/usr/local/bin/youtube-dlc";
+        command = "mpv " + playlist + " --no-video --script-opts=ytdl_hook-ytdl_path=/usr/local/bin/youtube-dlc";
     }
 
     if (shuffle)
     {
         command += " --shuffle";
+    }
+
+    if (loop)
+    {
+        command += " --loop-playlist";
     }
 
     if (playlist[0] == '/') // just for formatting

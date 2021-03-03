@@ -17,7 +17,7 @@ int main(int argc, char const *argv[])
 
     FileManager fm("custom-playlists.txt");
 
-    std::vector<std::string> flagOptions = {"-no-shuffle"};
+    // std::vector<std::string> flagOptions = {"-no-shuffle", "-no-loop"};
     // single flag options will not execute any other commands other than itself.
     // we use vector since we can for through the array and check if anything is found
     std::vector<std::string> singleFlagOptions = {"--help", "--list"};
@@ -28,12 +28,15 @@ int main(int argc, char const *argv[])
         arguments.push_back(argv[i]);
     }
 
-    if ((arguments.size() > 0) && (arguments.size() <= flagOptions.size() + 1))
+    if ((arguments.size() > 0))
     { // if arguments were passed in
         std::string args_1 = arguments[0];
-        int playlistToPlay;
+        int playlistToPlay = -1;
+        std::vector<int> playlists;
 
+        bool multiPlaylists = false;
         bool shufflePlaylist = true;
+        bool loopPlaylist = true;
         bool singleFlag = false;
         for (std::string &i : singleFlagOptions)
         {
@@ -75,27 +78,39 @@ int main(int argc, char const *argv[])
         {
             for (std::string &i : arguments)
             {
-                if (i == flagOptions.at(0)) // -no-shuffle
+                if (i == "-no-shuffle") // -no-shuffle
                 {
                     shufflePlaylist = false;
                     std::cout << "Not shuffling playlist." << std::endl;
                 }
+                else if (i == "-no-loop") // -no-loop
+                {
+                    loopPlaylist = false;
+                }
                 else
-                {                           // they have most likely passed in a number
-                    if (playlistToPlay > 0) // if a number was already passed in
-                    {
-                        std::cout << "Found multiple playlist numbers to play. Please only insert 1 number." << std::endl;
-                        return 0;
-                    }
+                { // they have most likely passed in a number
+                    // if (playlistToPlay > 0) // if a number was already passed in
+                    // {
+                    //     // playlists.push_back(playlistToPlay);
+                    //     std::cout << "Found multiple playlist numbers to play. Please only insert 1 number." << std::endl;
+                    //     return 0;
+                    // }
 
                     try
                     {
+                        if (playlistToPlay != -1)
+                        {
+                            multiPlaylists = true;
+                        }
+
                         playlistToPlay = std::stoi(i);
 
                         if (playlistToPlay < 1) // playlists starts at 1
                         {
                             throw 1;
                         }
+
+                        playlists.push_back(playlistToPlay);
                     }
                     catch (...)
                     {
@@ -106,16 +121,23 @@ int main(int argc, char const *argv[])
                 }
             }
 
-            fm.instantPlayPlaylist(playlistToPlay, shufflePlaylist); // play and shuffle playlist
+            if (multiPlaylists)
+            {
+                fm.instantMultiPlayPlaylist(playlists, shufflePlaylist, loopPlaylist);
+            }
+            else
+            {
+                fm.instantPlayPlaylist(playlistToPlay, shufflePlaylist, loopPlaylist); // play and shuffle playlist
+            }
         }
 
         return 0;
     }
-    else if (argc > flagOptions.size() + 2)
-    {
-        std::cout << "Too many arguments passed in, not parsing." << std::endl;
-        return 0;
-    }
+    // else if (argc > flagOptions.size() + 2)
+    // {
+    //     std::cout << "Too many arguments passed in, not parsing." << std::endl;
+    //     return 0;
+    // }
 
     while (running)
     {
@@ -189,23 +211,6 @@ void processAnswer(int option, std::vector<std::string> menuOptions, FileManager
 
 void displayHelp(FileManager *fm)
 {
-    // std::cout << "Welcome!" << std::endl;
-    // std::cout << "This CLI application is intended to help you play music in the background from YouTube." << std::endl;
-    // std::cout << "Now, let's look at the menu and talk about it:\n"
-    //           << std::endl;
-    // std::cout << "\tPlay Playlist: This option will read from the playlists saved inside\n\t'custom-playlists.txt' and display the options to you. You can choose a\n\tplaylist, and if everyting has been inserted correctly and the playlist still\n\texists, it will play the playlist (looping the playlist)\n"
-    //           << std::endl;
-    // std::cout << "\tAdd Playlist (online): If you want to add a new playlist to your list You can\n\tinsert a playlist name which should NOT contain any '~' or '`'. Then you can\n\tinsert a playlist link copied from YouTube. The playlist should be added to the\n\tfile with no problem.\n"
-    //           << std::endl;
-    // std::cout << "\tAdd Playlist (local): If you want to add a new playlist to your list You can\n\tinsert a playlist name which should NOT contain any '`' or '~'. Then you can\n\tinsert a playlist location, copied from a pwd result you typed in the terminal\n\t(go to folder with music in it. Type pwd. Copy the result and paste it into the\n\tlocal playlist location option). The playlist should be added to the file with no\n\tproblem.\n"
-    //           << std::endl;
-    // std::cout << "\tRemove Playlist: If there is a playlist you don't like using, just remove it\n\tfrom the list. If you want to listen to it after deleting it, you'll have to add\n\tit again.\n"
-    //           << std::endl;
-    // std::cout << "\tEdit Playlist: Did you perhaps insert the wrong name or link for your playlist?\n\tOr did the link change? This option will allow you to edit the playlist name and\n\tlink.\n"
-    //           << std::endl;
-    // std::cout << "\tHelp: Display some help you may need.\n"
-    //           << std::endl;
-    // std::cout << "\tFlags: There are 3 types of flags you can add when running bgmplayer,\n\tsingle-answer flags (--), multi-answer flags (-) and the playlist flag (playlist\n\tnumber). These flags can be used to play playlists without loading the rest of\n\tthe interface. You can add the playlist number to the end of the command\n\t(eg. bgmplayer 1) and it will instantly play and shuffle the playlist. You can\n\tuse -no-shuffle to not shuffle the playlist (so: bgmplayer 1 -no-shuffle). So\n\tfar we've talked abut multi-answer flags, flags where you can add multiple\n\tflags. Single-answer flags are different in the sense that they use 2 '--'\n\tinstead of 1 '-' and that there can only be 1 flag if it's a single-answer flag\n\t(eg. bgmplayer --help). You can find out more about flags in the Github page." << std::endl;
     std::string helpText = "";
     helpText += "This CLI application is intended to help you play music in the background from YouTube.\n";
 

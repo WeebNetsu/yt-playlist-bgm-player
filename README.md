@@ -33,24 +33,22 @@ Note: this only works on Linux, I'm planning to give it support for other OSs in
 <i>Note: You should have a stable internet connection to use the installer and YouTube playlist player.</i>
 
 Clone or download the files and make sure the ubuntu_based_installer.sh file is executable with:<br>
-<code><pre>chmod +x ubuntu_based_installer.sh</pre></code>
-Run the ubuntu_based_installer.sh file (debian/ubuntu based distros only) and you're ready to run the application! To run the application, execute the following command in your terminal:
-<code><pre>bgmplayer</pre></code>
-
-<b>If you don't have an Ubuntu based Linux distro</b>, you can compile the code (or use the existing "bgmplayer" file) and just mimic everything happening in the ubuntu_based_installer.sh, but modified for your system (so not apt, but pacman or whatever package manager you use).
+<code>chmod +x ubuntu_based_installer.sh</code><br>
+Run the ubuntu_based_installer.sh file (debian/ubuntu based distros only) and you're ready to run the application! To run the application, execute the following command in your terminal:<br><code>bgmplayer</code><br>
+<b>If you don't have an Ubuntu based Linux distro</b>, you can compile the code (or use the prebuilt "bgmplayer" file) and just mimic everything happening in the ubuntu_based_installer.sh, but modified for your system (so not apt, but pacman or whatever package manager you use).
 
 <span id="howToUpdate"></span>
 
 ## How to update
 
-If the application has a new version, you can redownload the source code and run the ubuntu_based_installer.sh file. It will update whatever should be updated. If you don't have a Ubuntu based system, just move the "bgmplayer" file to the $HOME/bin folder or add it to path for the latest version (you can compile it yourself if you want)
+If the application has a new version, you can redownload the source code and run the ubuntu_based_installer.sh file. It will update whatever should be updated. If you <b>don't have an Ubuntu based system</b> or don't want to reinstall it, just move the "bgmplayer" file to the $HOME/bin folder.
 
 <span id="compilingTheCode"></span>
 
 ## Compiling the code
 
 If you want to compile the source code yourself, you'll need the dependencies and g++.
-To compile: <code>g++ main.cpp FileManager.cpp -o bgmplayer</code>
+To compile: <code>make</code>
 
 <span id="dependencies"></span>
 
@@ -58,10 +56,10 @@ To compile: <code>g++ main.cpp FileManager.cpp -o bgmplayer</code>
 
 <ul>
 
-<li><a href="https://www.geeksforgeeks.org/compiling-with-g-plus-plus/">g++</a> or some other C++ compilier</li>
-<li>The <b>latest</b> version of <a href="https://mpv.io/installation/">mpv</a> (Debian-based users will have to add a repository and install the latest version: add-apt-repository ppa:mc3man/mpv-tests -y)</li>
-<li><a href="https://globedrill.com/bash-less-command-not-found-install-less-command-on-centos-ubuntu/">less</a> (most distros will already have less installed)</li>
-<li><a href="https://github.com/blackjack4494/yt-dlc">youtube-dlc</a></li>
+<li><a href="https://cmake.org/" target="_blank">CMake</a></li>
+<li>The <b>latest</b> version of <a href="https://mpv.io/installation/" target="_blank">mpv</a> (Debian-based users will have to add a repository and install the latest version: add-apt-repository ppa:mc3man/mpv-tests -y)</li>
+<li><a href="https://globedrill.com/bash-less-command-not-found-install-less-command-on-centos-ubuntu/" target="_blank">less</a> (most distros will already have less installed)</li>
+<li><a href="https://github.com/blackjack4494/yt-dlc" target="_blank">youtube-dlc</a></li>
 </ul>
 
 <span id="controls"></span>
@@ -155,8 +153,7 @@ If you don't want to use the interface, you can use flags to do some of the thin
 
 ### The playlist flag
 
-This flag is used to run a playlist without opening the interface, this can be done by running bgmplayer with the playlist number afterwards. This should always be added when using multi-answer flags.
-Example of the playlist flag: <code>bgmplayer 2</code> (will play playlist nr. 2)
+This flag is used to run a playlist without opening the interface, this can be done by running bgmplayer with the playlist number afterwards. This should always be added when using multi-answer flags.<br>Example of the playlist flag: <code>bgmplayer 2</code> (will play playlist nr. 2)<br>Another example of the playlist flag: <code>bgmplayer 1 2</code> (will play playlist nr. 1 & 2)
 
 <span id="singleAnswerFlags"></span>
 
@@ -199,5 +196,9 @@ Example of a multi-answer flag: <code>bgmplayer 1 -no-shuffle -some-other-flags<
     <tr>
         <td>-no-shuffle</td>
         <td>Disables playlist shuffling</td>
+    </tr>
+    <tr>
+        <td>-no-loop</td>
+        <td>Disables playlist looping</td>
     </tr>
 </table>

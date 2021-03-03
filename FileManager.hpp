@@ -28,7 +28,8 @@ public:
     void multiPlayPlaylists();
     void removePlaylist();
     void updatePlaylist();
-    void instantPlayPlaylist(int playlistToPlay, bool shuffle);
+    void instantPlayPlaylist(int playlistToPlay, bool shuffle, bool loop);
+    void instantMultiPlayPlaylist(std::vector<int> playlistsToPlay, bool shuffle, bool loop);
 
     void updatePlaylistName(int playlistNumber);
     void updatePlaylistLink(int playlistNumber);
