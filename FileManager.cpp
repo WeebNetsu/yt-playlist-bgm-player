@@ -6,6 +6,7 @@
 // #include <string.h>
 #include <unistd.h>  // to get username
 #include <algorithm> // so we can remove \n from end of strings
+#include <regex>
 
 #include "FileManager.hpp"
 #include "commonMethods.hpp"
@@ -24,9 +25,9 @@ std::vector<std::string> FileManager::getPlaylistsDontShow()
 
     std::vector<std::string> playlists;
     int count = 1;
-    bool local = false;
     while (getline(fPlaylistFile, line))
     {
+        bool local = false;
         std::size_t split = line.find('~'); //finds '~'
 
         if (split == -1)
@@ -103,7 +104,9 @@ void FileManager::instantMultiPlayPlaylist(std::vector<int> playlistsToPlay, boo
             {
                 if (playlist[0] == '/')
                 {
-                    playlist.insert(playlist.find(" "), "\\");
+                    std::regex rep(" ");
+                    playlist = regex_replace(playlist, rep, "\\ ");
+                    // playlist.insert(playlist.find(" "), "\\");
                     cleanList.push_back(playlist.append("/*"));
                 }
                 else
@@ -180,9 +183,12 @@ void FileManager::instantPlayPlaylist(int playlistToPlay, bool shuffle, bool loo
     std::string command;
 
     // std::cout << playlist << std::endl;
+
     if (playlist[0] == '/')
     {
-        playlist.insert(playlist.find(" "), "\\");
+        std::regex rep(" ");
+        playlist = regex_replace(playlist, rep, "\\ ");
+        // playlist.insert(playlist.find(" "), "\\");
         command = "mpv " + playlist.append("/*") + " --no-video";
     }
     else
@@ -682,7 +688,9 @@ void FileManager::playPlaylist()
     // std::cout << playlist << std::endl;
     if (playlist[0] == '/')
     {
-        playlist.insert(playlist.find(" "), "\\");
+        std::regex rep(" ");
+        playlist = regex_replace(playlist, rep, "\\ ");
+
         command = "mpv " + playlist.append("/*") + " --no-video --loop-playlist";
     }
     else
@@ -793,7 +801,8 @@ void FileManager::multiPlayPlaylists()
             {
                 if (playlist[0] == '/')
                 {
-                    playlist.insert(playlist.find(" "), "\\");
+                    std::regex rep(" ");
+                    playlist = regex_replace(playlist, rep, "\\ ");
                     cleanList.push_back(playlist.append("/*"));
                 }
                 else

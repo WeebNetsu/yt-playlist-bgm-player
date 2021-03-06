@@ -3,7 +3,8 @@
 
 #include <string>
 
-namespace cmds{
+namespace cmds
+{
     int inputSafe(int num);
     bool compareStrings(std::string str1, std::string str2);
     void clearInput();

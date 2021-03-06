@@ -55,10 +55,10 @@ To compile: <code>make</code>
 ### Dependencies
 
 <ul>
-
+<li><a href="https://www.python.org/download/releases/2.0/" target="_blank">Python2</a> <small>(sudo apt-get install python)</small></li>
 <li><a href="https://cmake.org/" target="_blank">CMake</a></li>
 <li>The <b>latest</b> version of <a href="https://mpv.io/installation/" target="_blank">mpv</a> (Debian-based users will have to add a repository and install the latest version: add-apt-repository ppa:mc3man/mpv-tests -y)</li>
-<li><a href="https://globedrill.com/bash-less-command-not-found-install-less-command-on-centos-ubuntu/" target="_blank">less</a> (most distros will already have less installed)</li>
+<li><a href="https://globedrill.com/bash-less-command-not-found-install-less-command-on-centos-ubuntu/" target="_blank">less</a> <small>(sudo apt-get install less)</small></li>
 <li><a href="https://github.com/blackjack4494/yt-dlc" target="_blank">youtube-dlc</a></li>
 </ul>
 
