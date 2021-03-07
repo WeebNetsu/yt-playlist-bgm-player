@@ -14,6 +14,7 @@ namespace cmds
     void clearInput(int characters);
 
     std::string skinStr(std::string str);
+
 }
 
 #endif // COMMON_METHODS

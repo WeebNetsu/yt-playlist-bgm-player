@@ -9,5 +9,5 @@ add_executable(
     bgmplayer
     main.cpp
     FileManager.cpp
-    commonMethods.cpp
+    CommonMethods.cpp
 )

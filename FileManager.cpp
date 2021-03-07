@@ -8,7 +8,7 @@
 #include <regex>       // used when working with local files
 
 #include "FileManager.hpp"
-#include "commonMethods.hpp"
+#include "CommonMethods.hpp"
 
 // Constructor
 FileManager::FileManager(std::string fileName)
@@ -333,7 +333,7 @@ void FileManager::updatePlaylist()
 
     // choose a playlist to edit
     std::cout << "(Playlist to edit) > ";
-    int chosenPlaylist = cmds::inputSafe(chosenPlaylist);
+    int chosenPlaylist = cmds::numberInput();
 
     // if the playlist does not exist
     if ((chosenPlaylist > playlists.size()) && (chosenPlaylist != 0))
@@ -360,7 +360,7 @@ void FileManager::updatePlaylist()
 
     std::cout << "(What to edit) > ";
 
-    int chosenOption = cmds::inputSafe(chosenOption);
+    int chosenOption = cmds::numberInput();
 
     switch (chosenOption)
     {
@@ -399,7 +399,7 @@ void FileManager::removePlaylist()
     std::vector<std::string> playlists = getAndShowPlaylists(); // get playlists
 
     std::cout << "(Playlist to remove) > ";
-    int chosenPlaylist = cmds::inputSafe(chosenPlaylist);
+    int chosenPlaylist = cmds::numberInput();
 
     // if the playlist they chose does not exists
     if ((chosenPlaylist > playlists.size()) && (chosenPlaylist != 0))
