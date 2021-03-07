@@ -8,40 +8,42 @@ class FileManager
 {
 private:
     std::string fileName;
+    enum ModType
+    {
+        NAME,
+        LINK,
+        LOCAL,
+        DELETE
+    };
 
 public:
     FileManager(std::string fileName);
     ~FileManager();
 
-    //getters
     std::string getFileName();
-    std::string getTempFileName(std::string tempFileName);
+    std::string getFileName(std::string tempFileName);
 
-    //aux
     bool checkFileEmpty();
-    void createFile();
-    std::ofstream openFile();
-    void closeFile(std::ofstream fFile);
 
     void addPlaylist();
-    void playPlaylist();
-    void multiPlayPlaylists();
+    void playPlaylists();
     void removePlaylist();
     void updatePlaylist();
-    void instantPlayPlaylist(int playlistToPlay, bool shuffle, bool loop);
-    void instantMultiPlayPlaylist(std::vector<int> playlistsToPlay, bool shuffle, bool loop);
+    void instantPlayPlaylists(std::vector<int> playlistsToPlay, bool shuffle, bool loop);
 
     void updatePlaylistName(int playlistNumber);
     void updatePlaylistLink(int playlistNumber);
+
+    std::string rewritePlaylists(int playlistNumber, ModType modType, std::string newChange);
+    void rewriteFile(std::string newList);
 
     std::vector<std::string> getAndShowPlaylists();
     void showPlaylists();
     std::vector<std::string> getPlaylistsDontShow();
 
-    // bool compareStrings(std::string str1, std::string str2);
     bool checkPlaylistExists(std::string playlistName);
     bool shufflePlaylist();
-    // int inputSafe(int num);
+
     std::string getUsernameLinux();
 
     void displayPlayerControls();

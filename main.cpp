@@ -11,13 +11,12 @@ bool running = true;
 
 int main(int argc, char const *argv[])
 {
-    std::vector<std::string> menuOptions = {"Play Playlist", "Multi-Play Playlists", "Add Playlist", "Remove Playlist", "Edit Playlist", "Help"};
+    std::vector<std::string> menuOptions = {"Play Playlists", "Add Playlist", "Edit Playlist", "Remove Playlist", "Help"};
 
     std::cout << "Welcome!" << std::endl;
 
     FileManager fm("custom-playlists.txt");
 
-    // std::vector<std::string> flagOptions = {"-no-shuffle", "-no-loop"};
     // single flag options will not execute any other commands other than itself.
     // we use vector since we can for through the array and check if anything is found
     std::vector<std::string> singleFlagOptions = {"--help", "--list"};
@@ -28,13 +27,12 @@ int main(int argc, char const *argv[])
         arguments.push_back(argv[i]);
     }
 
-    if ((arguments.size() > 0))
-    { // if arguments were passed in
+    if ((arguments.size() > 0)) // if arguments were passed in
+    {
         std::string args_1 = arguments[0];
         int playlistToPlay = -1;
         std::vector<int> playlists;
 
-        bool multiPlaylists = false;
         bool shufflePlaylist = true;
         bool loopPlaylist = true;
         bool singleFlag = false;
@@ -88,21 +86,9 @@ int main(int argc, char const *argv[])
                     loopPlaylist = false;
                 }
                 else
-                { // they have most likely passed in a number
-                    // if (playlistToPlay > 0) // if a number was already passed in
-                    // {
-                    //     // playlists.push_back(playlistToPlay);
-                    //     std::cout << "Found multiple playlist numbers to play. Please only insert 1 number." << std::endl;
-                    //     return 0;
-                    // }
-
+                {
                     try
                     {
-                        if (playlistToPlay != -1)
-                        {
-                            multiPlaylists = true;
-                        }
-
                         playlistToPlay = std::stoi(i);
 
                         if (playlistToPlay < 1) // playlists starts at 1
@@ -121,23 +107,11 @@ int main(int argc, char const *argv[])
                 }
             }
 
-            if (multiPlaylists)
-            {
-                fm.instantMultiPlayPlaylist(playlists, shufflePlaylist, loopPlaylist);
-            }
-            else
-            {
-                fm.instantPlayPlaylist(playlistToPlay, shufflePlaylist, loopPlaylist); // play and shuffle playlist
-            }
+            fm.instantPlayPlaylists(playlists, shufflePlaylist, loopPlaylist);
         }
 
         return 0;
     }
-    // else if (argc > flagOptions.size() + 2)
-    // {
-    //     std::cout << "Too many arguments passed in, not parsing." << std::endl;
-    //     return 0;
-    // }
 
     while (running)
     {
@@ -161,23 +135,24 @@ int main(int argc, char const *argv[])
     return 0;
 }
 
+// get the choice the user made in the menu
 void processAnswer(int option, std::vector<std::string> menuOptions, FileManager *fm)
 {
     switch (option)
     {
     case 1:
-        std::cout << "Play Playlist" << std::endl;
-        fm->playPlaylist();
+        std::cout << "Play Playlists" << std::endl;
+        fm->playPlaylists();
         break;
 
     case 2:
-        std::cout << "Multi-Play Playlists" << std::endl;
-        fm->multiPlayPlaylists();
+        std::cout << "Add Playlist" << std::endl;
+        fm->addPlaylist();
         break;
 
     case 3:
-        std::cout << "Add Playlist" << std::endl;
-        fm->addPlaylist();
+        std::cout << "Update Playlist" << std::endl;
+        fm->updatePlaylist();
         break;
 
     case 4:
@@ -186,11 +161,6 @@ void processAnswer(int option, std::vector<std::string> menuOptions, FileManager
         break;
 
     case 5:
-        std::cout << "Update Playlist" << std::endl;
-        fm->updatePlaylist();
-        break;
-
-    case 6:
         std::cout << std::endl;
         displayHelp(fm);
         std::cout << std::endl;
@@ -216,9 +186,7 @@ void displayHelp(FileManager *fm)
 
     helpText += "Now, let's look at the menu and talk about it:\n";
 
-    helpText += "\n\tPlay Playlist: This option will read from the playlists saved inside\n\t'custom-playlists.txt' and display the options to you. You can choose a\n\tplaylist, and if everyting has been inserted correctly and the playlist still\n\texists, it will play the playlist (looping the playlist)\n";
-
-    helpText += "\n\tMulti-Play Playlist: This option will allow you to listen to multiple playlists.\n\tPlaylist numbers are separated by spaces (so: 4 6 9 will play playlists 4, 6 and\n\t9).\n";
+    helpText += "\n\tPlay Playlist: This option will read from the playlists saved inside\n\t'custom-playlists.txt' and display the options to you. You can play one or more\n\tplaylists (separated by spaces) from here.";
 
     helpText += "\n\tAdd Playlist (online): If you want to add a new playlist to your list You can\n\tinsert a playlist name which should NOT contain any '~' or '`'. Then you can\n\tinsert a playlist link copied from YouTube. The playlist should be added to the\n\tfile with no problem.\n";
 
@@ -231,7 +199,7 @@ void displayHelp(FileManager *fm)
     helpText += "\nPress 'q' to exit help.";
 
     std::ofstream fHelpFile;
-    fHelpFile.open(fm->getTempFileName("help.txt"));
+    fHelpFile.open(fm->getFileName("help.txt"));
 
     if (!fHelpFile.is_open())
     {
@@ -244,13 +212,8 @@ void displayHelp(FileManager *fm)
     fHelpFile << helpText;
     fHelpFile.close();
 
-    // std::string line;
-    // std::ifstream fPlaylistFile(fm->getTempFileName("help.txt")); //gets input from the file
-
     std::string command = "less ";
-    command += fm->getTempFileName("help.txt");
-
-    // fPlaylistFile.close();
+    command += fm->getFileName("help.txt");
 
     const char *execute = command.c_str();
 
@@ -258,9 +221,10 @@ void displayHelp(FileManager *fm)
 
     fm->displayPlayerControls();
 
-    std::cout << "\nSome problems may still happen, so if it does, edit the code yourself if you have the\nsource code or remove the problem from the 'custom-playlists.txt' file (if the problem\nis from the playlists file), or create an issue on Github: https://github.com/WeebNetsu/yt-playlist-bgm-player" << std::endl;
+    std::cout << "\nSome problems may still occur and if it does, edit the code yourself if you have\nthe source code or remove the problem from the 'custom-playlists.txt' file (if\nthe problem is from the playlists file), or create an issue on Github:\n\thttps://github.com/WeebNetsu/yt-playlist-bgm-player" << std::endl;
 }
 
+// display the menu to the user
 void displayMenu(std::vector<std::string> menuOptions)
 {
     std::cout << "What would you like to do?" << std::endl;
