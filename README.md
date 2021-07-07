@@ -1,7 +1,13 @@
 # YouTube Playlist BGM Player
 
-This is a basic background music player made with C++ to play YouTube Playlists in the background. It is focused on being very light weight and easily accessable, even if you don't have a Desktop Enviroment or Window Manager (so cli only).
-Note: this only works on Linux, I'm planning to give it support for other OSs in the future.
+This is a basic background music player made with C++ to play YouTube Playlists in the background. It is focused on being very light weight and easily accessable, even if you don't have a Desktop Enviroment or Window Manager.
+
+Notes: 
+<ul>
+    <!-- it may have Mac support, but I don't have a Mac to test it on -->
+    <li>This currently only tested on Linux (and probably works on Mac), I'm planning to give it support for other OSs in the future.</li>
+    <li>It is only an CLI interface for MPV, less typing, easier usage ect.</li>
+</ul>
 
 ## Content
 
@@ -55,9 +61,11 @@ To compile: <code>make</code>
 ### Dependencies
 
 <ul>
-<li><a href="https://www.python.org/download/releases/2.0/" target="_blank">Python 2</a> <small>(sudo apt-get install python)</small></li>
+<!-- Why did it need python2? -->
+<!-- <li><a href="https://www.python.org/download/releases/2.0/" target="_blank">Python 2</a> <small>(sudo apt-get install python)</small></li> -->
 <li><a href="https://cmake.org/" target="_blank">CMake</a></li>
 <li>The <b>latest</b> version of <a href="https://mpv.io/installation/" target="_blank">mpv</a> (Debian-based users will have to add a repository and install the latest version: add-apt-repository ppa:mc3man/mpv-tests -y)</li>
+<!-- less - because I don't know how to replicate it with C++ yet -->
 <li><a href="https://globedrill.com/bash-less-command-not-found-install-less-command-on-centos-ubuntu/" target="_blank">less</a> <small>(sudo apt-get install less)</small></li>
 <li><a href="https://github.com/blackjack4494/yt-dlc" target="_blank">youtube-dlc</a></li>
 </ul>

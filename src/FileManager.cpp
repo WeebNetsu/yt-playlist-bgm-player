@@ -1,14 +1,16 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
-#include <sys/stat.h>  // to check if directories exists and stuff
-#include <sys/types.h> // for creating directories
-#include <unistd.h>    // to get username
-#include <algorithm>   // so we can remove \n from end of strings
-#include <regex>       // used when working with local files
+#include <sys/stat.h>   // to check if directories exists and stuff
+#include <sys/types.h>  // for creating directories
+#include <unistd.h>     // to get username
+#include <algorithm>    // so we can remove \n from end of strings
+#include <regex>        // used when working with local files
+// #include <mpv/client.h> // to use mpv without system()
+#include <map>
 
-#include "FileManager.hpp"
-#include "CommonMethods.hpp"
+#include "../include/FileManager.hpp"
+#include "../deps/CommonMethods.hpp"
 
 // Constructor
 FileManager::FileManager(std::string fileName)
@@ -77,9 +79,9 @@ std::vector<std::string> FileManager::getPlaylistsDontShow()
 }
 
 // if the user wants to play playlists without opening the interface
-void FileManager::instantPlayPlaylists(std::vector<int> playlistsToPlay, bool shuffle, bool loop)
+void FileManager::instantPlayPlaylists(std::vector<int> playlistsToPlay, std::map<std::string, bool> flags/* , bool shuffle, bool loop */)
 {
-    std::cout << "HERE" << std::endl;
+    // std::cout << "HERE" << std::endl;
 
     // if the file is empty
     if (checkFileEmpty())
@@ -151,12 +153,12 @@ void FileManager::instantPlayPlaylists(std::vector<int> playlistsToPlay, bool sh
 
     // basic mpv command: mpv playlist --no-video youtube-dl-location
     command = "mpv " + playlistsCommand + " --no-video --script-opts=ytdl_hook-ytdl_path=/usr/local/bin/youtube-dlc";
-    if (shuffle) // if the user wants to shuffle
+    if (flags["shuffle"]) // if the user wants to shuffle
     {
         command += " --shuffle";
     }
 
-    if (loop) // if the user wants to loop the playlists
+    if (flags["loop"]) // if the user wants to loop the playlists
     {
         command += " --loop-playlist";
     }

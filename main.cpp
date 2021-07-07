@@ -1,19 +1,58 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <map>
 
-#include "FileManager.hpp"
+#include "include/FileManager.hpp"
+#include "np/Color.hpp"
 
 void displayMenu(std::vector<std::string> menuOptions);
 void processAnswer(int option, std::vector<std::string> menuOptions, FileManager *fm);
+void manageFlags(std::vector<std::string> &arguments, FileManager &fm);
 void displayHelp(FileManager *fm);
+
+void showMessage(std::string message, std::string type = "normal", bool breakLine = true)
+{
+    Color::Modifier defColor = Color::FG_DEFAULT; // normal
+
+    if (type == "error")
+    {
+        defColor = Color::FG_RED;
+    }
+    else if (type == "success")
+    {
+        defColor = Color::FG_GREEN;
+    }
+    else if (type == "warning")
+    {
+        defColor = Color::FG_YELLOW;
+    }
+    else if (type == "notice")
+    {
+        defColor = Color::FG_BLUE;
+    }
+
+    if (breakLine)
+    {
+        std::cout << defColor << message << std::endl;
+    }
+    else
+    {
+        std::cout << defColor << message;
+    }
+
+    //reset the console color
+    defColor = Color::FG_DEFAULT;
+    std::cout << defColor;
+}
+
 bool running = true;
 
 int main(int argc, char const *argv[])
 {
     std::vector<std::string> menuOptions = {"Play Playlists", "Add Playlist", "Edit Playlist", "Remove Playlist", "Help"};
 
-    std::cout << "Welcome!" << std::endl;
+    showMessage("Welcome!");
 
     FileManager fm("custom-playlists.txt");
 
@@ -27,88 +66,9 @@ int main(int argc, char const *argv[])
         arguments.push_back(argv[i]);
     }
 
-    if ((arguments.size() > 0)) // if arguments were passed in
+    if (arguments.size() > 0) // if arguments were passed in
     {
-        std::string args_1 = arguments[0];
-        int playlistToPlay = -1;
-        std::vector<int> playlists;
-
-        bool shufflePlaylist = true;
-        bool loopPlaylist = true;
-        bool singleFlag = false;
-        for (std::string &i : singleFlagOptions)
-        {
-            for (std::string &j : arguments)
-            {
-                if (i == j)
-                {
-                    singleFlag = true;
-                }
-            }
-        }
-
-        if (singleFlag)
-        {
-            if (arguments.size() > 1)
-            {
-                std::cout << "Single answer flag detected (any flag starting with '--'). No other flags or arguments may be added when adding a single answer flag" << std::endl;
-            }
-            else
-            {
-                for (std::string &i : arguments)
-                {
-                    if (i == singleFlagOptions.at(0)) // --help
-                    {
-                        displayHelp(&fm);
-                    }
-                    else if (i == singleFlagOptions.at(1)) // --list
-                    {
-                        std::cout << "Your Playlists:" << std::endl;
-
-                        fm.showPlaylists();
-                    }
-                }
-            }
-
-            return 0;
-        }
-        else
-        {
-            for (std::string &i : arguments)
-            {
-                if (i == "-no-shuffle") // -no-shuffle
-                {
-                    shufflePlaylist = false;
-                    std::cout << "Not shuffling playlist." << std::endl;
-                }
-                else if (i == "-no-loop") // -no-loop
-                {
-                    loopPlaylist = false;
-                }
-                else
-                {
-                    try
-                    {
-                        playlistToPlay = std::stoi(i);
-
-                        if (playlistToPlay < 1) // playlists starts at 1
-                        {
-                            throw 1;
-                        }
-
-                        playlists.push_back(playlistToPlay);
-                    }
-                    catch (...)
-                    {
-                        std::cout << "Error with argument input. " << i << " is either an invalid argument, or a number lower than 1." << std::endl;
-
-                        return 0;
-                    }
-                }
-            }
-
-            fm.instantPlayPlaylists(playlists, shufflePlaylist, loopPlaylist);
-        }
+        manageFlags(arguments, fm);
 
         return 0;
     }
@@ -117,7 +77,7 @@ int main(int argc, char const *argv[])
     {
         if (fm.checkFileEmpty())
         {
-            std::cout << "Note: Custom playlists file is empty" << std::endl;
+            showMessage("Note: Custom playlists file is empty", "warning");
         }
 
         std::cout << std::endl;
@@ -126,7 +86,6 @@ int main(int argc, char const *argv[])
         int option;
 
         std::cout << "> ";
-
         std::cin >> option;
 
         processAnswer(option, menuOptions, &fm);
@@ -141,22 +100,22 @@ void processAnswer(int option, std::vector<std::string> menuOptions, FileManager
     switch (option)
     {
     case 1:
-        std::cout << "Play Playlists" << std::endl;
+        showMessage("Play Playlists");
         fm->playPlaylists();
         break;
 
     case 2:
-        std::cout << "Add Playlist" << std::endl;
+        showMessage("Add Playlist");
         fm->addPlaylist();
         break;
 
     case 3:
-        std::cout << "Update Playlist" << std::endl;
+        showMessage("Update Playlist");
         fm->updatePlaylist();
         break;
 
     case 4:
-        std::cout << "Remove Playlist" << std::endl;
+        showMessage("Remove Playlist");
         fm->removePlaylist();
         break;
 
@@ -167,15 +126,102 @@ void processAnswer(int option, std::vector<std::string> menuOptions, FileManager
         break;
 
     case 0:
-        std::cout << "Exit" << std::endl;
+        showMessage("Exit");
         running = false;
         break;
 
     default:
-        std::cout << "Invalid input... Please try again: ";
+        showMessage("Invalid input... Please try again: ", "warning");
         std::cin.clear();
         std::cin.ignore(100, '\n');
         break;
+    }
+}
+
+void manageFlags(std::vector<std::string> &arguments, FileManager &fm)
+{
+    std::vector<std::string> singleFlagOptions = {"--help", "--list"};
+
+    std::string args_1 = arguments[0];
+    int playlistToPlay = -1;
+    std::vector<int> playlists;
+
+    std::map<std::string, bool> playerFlagput = {
+        {"shuffle", true},
+        {"loop", true},
+        {"singleFlag", false}};
+
+    for (std::string &i : singleFlagOptions)
+    {
+        for (std::string &j : arguments)
+        {
+            if (i == j)
+            {
+                playerFlagput["singleFlag"] = true;
+            }
+        }
+    }
+
+    if (playerFlagput["singleFlag"])
+    {
+        if (arguments.size() > 1)
+        {
+            showMessage("Single answer flag detected (any flag starting with '--'). No other flags or arguments may be added when adding a single answer flag", "error");
+        }
+        else
+        {
+            for (std::string &i : arguments)
+            {
+                if (i == singleFlagOptions.at(0)) // --help
+                {
+                    displayHelp(&fm);
+                }
+                else if (i == singleFlagOptions.at(1)) // --list
+                {
+                    showMessage("Your Playlists:");
+
+                    fm.showPlaylists();
+                }
+            }
+        }
+    }
+    else
+    {
+        for (std::string &i : arguments)
+        {
+            if (i == "-no-shuffle")
+            {
+                playerFlagput["shuffle"] = false;
+                showMessage("Not shuffling playlist.", "success");
+            }
+            else if (i == "-no-loop")
+            {
+                showMessage("Not looping playlist.", "success");
+                playerFlagput["loop"] = false;
+            }
+            else
+            {
+                try
+                {
+                    playlistToPlay = std::stoi(i);
+
+                    if (playlistToPlay < 1) // playlists starts at 1
+                    {
+                        throw 1;
+                    }
+
+                    playlists.push_back(playlistToPlay);
+                }
+                catch (...)
+                {
+                    showMessage("Error with argument input. \"" + i + "\" is either an invalid argument, or a number lower than 1.", "error");
+
+                    return;
+                }
+            }
+        }
+
+        fm.instantPlayPlaylists(playlists, playerFlagput);
     }
 }
 
@@ -203,8 +249,8 @@ void displayHelp(FileManager *fm)
 
     if (!fHelpFile.is_open())
     {
-        std::cout << "Couldn't open help file for short reading. Printing default." << std::endl;
-        std::cout << helpText << std::endl;
+        showMessage("Couldn't open help file for short reading. Printing default.", "warning");
+        showMessage(helpText);
 
         return;
     }
@@ -221,7 +267,7 @@ void displayHelp(FileManager *fm)
 
     fm->displayPlayerControls();
 
-    std::cout << "\nSome problems may still occur and if it does, edit the code yourself if you have\nthe source code or remove the problem from the 'custom-playlists.txt' file (if\nthe problem is from the playlists file), or create an issue on Github:\n\thttps://github.com/WeebNetsu/yt-playlist-bgm-player" << std::endl;
+    showMessage("\nSome problems may still occur and if it does, edit the code yourself if you have\nthe source code or remove the problem from the 'custom-playlists.txt' file (if\nthe problem is from the playlists file), or create an issue on Github:\n\thttps://github.com/WeebNetsu/yt-playlist-bgm-player", "notice");
 }
 
 // display the menu to the user

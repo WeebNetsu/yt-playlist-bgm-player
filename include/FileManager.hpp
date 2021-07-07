@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <map>
 
 class FileManager
 {
@@ -29,7 +30,7 @@ public:
     void playPlaylists();
     void removePlaylist();
     void updatePlaylist();
-    void instantPlayPlaylists(std::vector<int> playlistsToPlay, bool shuffle, bool loop);
+    void instantPlayPlaylists(std::vector<int> playlistsToPlay, std::map<std::string, bool> flags);
 
     void updatePlaylistName(int playlistNumber);
     void updatePlaylistLink(int playlistNumber);

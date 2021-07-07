@@ -7,7 +7,7 @@ project(yt-playlist-bgm-player)
 
 add_executable(
     bgmplayer
-    main.cpp
-    FileManager.cpp
-    CommonMethods.cpp
+    ../main.cpp
+    ../includes/FileManager.cpp
+    ../deps/CommonMethods.cpp
 )
