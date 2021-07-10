@@ -1,11 +1,11 @@
-#if !defined(FILE_MANAGER)
-#define FILE_MANAGER
+#if !defined(MEDIA_PLAYER)
+#define MEDIA_PLAYER
 
 #include <iostream>
 #include <fstream>
 #include <map>
 
-class FileManager
+class Player
 {
 private:
     std::string fileName;
@@ -18,8 +18,8 @@ private:
     };
 
 public:
-    FileManager(std::string fileName);
-    ~FileManager();
+    Player(std::string fileName);
+    ~Player();
 
     std::string getFileName();
     std::string getFileName(std::string tempFileName);
@@ -50,4 +50,4 @@ public:
     void displayPlayerControls();
 };
 
-#endif // FILE_MANAGER
+#endif // MEDIA_PLAYER

@@ -2,7 +2,8 @@
 #include <string>
 #include <algorithm> // to use std::all_of
 
-#include "CommonMethods.hpp"
+#include "../include/CommonMethods.hpp"
+#include "../include/Color.hpp"
 
 namespace cmds
 {
@@ -20,11 +21,6 @@ namespace cmds
 
 		return num;
 	};
-
-	bool sii(std::string str) // checks if string is a positive integer (eg: "24" = true)
-	{
-		return !str.empty() && std::all_of(str.begin(), str.end(), ::isdigit);
-	}
 
 	bool compareStrings(std::string str1, std::string str2)
 	{ // compare 2 strings with each other
@@ -56,7 +52,47 @@ namespace cmds
 		std::cin.ignore(characters, '\n');
 	}
 
-	std::string skinStr(std::string str)
+	// type = "normal"; breakline = true; by default
+	void showMessage(std::string message, std::string type, bool breakLine)
+	{
+		Color::Modifier defColor = Color::FG_DEFAULT; // normal
+
+		if (type == "error")
+		{
+			// error: this stops the application from running
+			defColor = Color::FG_RED;
+		}
+		else if (type == "success")
+		{
+			// completed successfully
+			defColor = Color::FG_GREEN;
+		}
+		else if (type == "warning")
+		{
+			// error, bad notice, application continues running
+			defColor = Color::FG_YELLOW;
+		}
+		else if (type == "notice")
+		{
+			// notice message
+			defColor = Color::FG_BLUE;
+		}
+
+		if (breakLine)
+		{
+			std::cout << defColor << message << std::endl;
+		}
+		else
+		{
+			std::cout << defColor << message;
+		}
+
+		//reset the console color
+		defColor = Color::FG_DEFAULT;
+		std::cout << defColor;
+	}
+
+	std::string trimStr(std::string str)
 	{
 		while (str.size())
 		{

@@ -1,19 +1,19 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
-#include <sys/stat.h>   // to check if directories exists and stuff
-#include <sys/types.h>  // for creating directories
-#include <unistd.h>     // to get username
-#include <algorithm>    // so we can remove \n from end of strings
-#include <regex>        // used when working with local files
+#include <sys/stat.h>  // to check if directories exists and stuff
+#include <sys/types.h> // for creating directories
+#include <unistd.h>    // to get username
+#include <algorithm>   // so we can remove \n from end of strings
+#include <regex>       // used when working with local files
 // #include <mpv/client.h> // to use mpv without system()
 #include <map>
 
-#include "../include/FileManager.hpp"
-#include "../deps/CommonMethods.hpp"
+#include "../include/Player.hpp"
+#include "../include/CommonMethods.hpp"
 
 // Constructor
-FileManager::FileManager(std::string fileName)
+Player::Player(std::string fileName)
 {
     this->fileName = fileName;
 
@@ -27,7 +27,7 @@ FileManager::FileManager(std::string fileName)
     struct stat _st = {0};
     if (stat(loc, &_st) == -1) // if location does not exist
     {
-        std::cout << "Could not find .ytbgmpcli folder. Creating folder." << std::endl;
+        cmds::showMessage("Could not find .ytbgmpcli folder. Creating folder.", "notice");
 
         mkdir(loc, 0777);
     }
@@ -36,7 +36,7 @@ FileManager::FileManager(std::string fileName)
 
     if (stat(getFileName().c_str(), &_st2) == -1) // if custom links file does not exist
     {
-        std::cout << "Could not find customs file. Creating file." << std::endl;
+        cmds::showMessage("Could not find customs file. Creating file.", "notice");
 
         std::ofstream fFile(getFileName().c_str());
         fFile << "";
@@ -44,8 +44,8 @@ FileManager::FileManager(std::string fileName)
     }
 }
 
-// returns all the playlists but does not out to the terminal
-std::vector<std::string> FileManager::getPlaylistsDontShow()
+// returns all the playlists but does not output to the terminal
+std::vector<std::string> Player::getPlaylistsDontShow()
 {
     std::string line;
     std::ifstream fPlaylistFile(getFileName()); //gets input from the file
@@ -79,14 +79,12 @@ std::vector<std::string> FileManager::getPlaylistsDontShow()
 }
 
 // if the user wants to play playlists without opening the interface
-void FileManager::instantPlayPlaylists(std::vector<int> playlistsToPlay, std::map<std::string, bool> flags/* , bool shuffle, bool loop */)
+void Player::instantPlayPlaylists(std::vector<int> playlistsToPlay, std::map<std::string, bool> flags)
 {
-    // std::cout << "HERE" << std::endl;
-
     // if the file is empty
     if (checkFileEmpty())
     {
-        std::cout << "No playlists have been added..." << std::endl;
+        cmds::showMessage("No playlists have been added. Playlist file is empty.", "error");
         return;
     }
 
@@ -105,11 +103,11 @@ void FileManager::instantPlayPlaylists(std::vector<int> playlistsToPlay, std::ma
         */
         if (playlistNum > playlists.size())
         {
-            std::cout << "Error, could not find playlist nr: " << playlistNum << "... Does it exist?" << std::endl;
+            cmds::showMessage("Could not find playlist nr: " + std::to_string(playlistNum) + "... Does it exist?", "error");
             return;
         }
 
-        // playlistNum -1 since playlist 2 will be at index 1
+        // playlistNum - 1 since playlist 2 will be at index 1
         std::string playlist = playlists[playlistNum - 1];
 
         while (playlist.size())
@@ -171,9 +169,12 @@ void FileManager::instantPlayPlaylists(std::vector<int> playlistsToPlay, std::ma
 
     // execute!
     system(execute);
+
+    cmds::showMessage("Goodbye!", "notice");
 }
 
-std::string FileManager::rewritePlaylists(int playlistNumber, ModType modType, std::string newChange)
+// edit a playlist (returns result)
+std::string Player::rewritePlaylists(int playlistNumber, ModType modType, std::string newChange)
 {
     std::vector<std::string> playlistNames;
     std::vector<std::string> playlistLinks;
@@ -247,24 +248,25 @@ std::string FileManager::rewritePlaylists(int playlistNumber, ModType modType, s
     return newList;
 }
 
-void FileManager::rewriteFile(std::string newList)
+// edit playlist file (modifies file)
+void Player::rewriteFile(std::string newList)
 {
     std::ofstream fPlaylistFileRewrite(getFileName());
 
     if (!fPlaylistFileRewrite.is_open())
     {
-        std::cout << "Couldn't open 'custom-playlists.txt', please check write permissions" << std::endl;
+        cmds::showMessage("Couldn't open 'custom-playlists.txt', please check write permissions", "error");
         return;
     }
 
     fPlaylistFileRewrite << newList; // rewrite playlist file
     fPlaylistFileRewrite.close();
 
-    std::cout << "--- Playlist Updated ---" << std::endl;
+    cmds::showMessage("--- Playlist Updated ---", "success");
 }
 
 // edit the link a playlist has
-void FileManager::updatePlaylistLink(int playlistNumber)
+void Player::updatePlaylistLink(int playlistNumber)
 {
     std::cout << "New link/location for playlist (cancel to cancel): ";
     std::string newPlaylistLink;
@@ -275,12 +277,12 @@ void FileManager::updatePlaylistLink(int playlistNumber)
     // if the user canceled the operation
     if (cmds::compareStrings(newPlaylistLink, "cancel"))
     {
-        std::cout << "--- Operation Canceled ---" << std::endl;
+        cmds::showMessage("--- Operation Canceled ---", "notice");
         return;
     }
     else if (cmds::compareStrings(newPlaylistLink, ""))
     {
-        std::cout << "Empty line found. Operation Canceled." << std::endl;
+        cmds::showMessage("Empty line found. Operation Canceled.", "warning");
         return;
     }
 
@@ -290,7 +292,7 @@ void FileManager::updatePlaylistLink(int playlistNumber)
 }
 
 // edit the name of a playlist
-void FileManager::updatePlaylistName(int playlistNumber)
+void Player::updatePlaylistName(int playlistNumber)
 {
     std::cout << "New name for playlist (cancel to cancel): ";
     std::string newPlaylistName;
@@ -300,12 +302,12 @@ void FileManager::updatePlaylistName(int playlistNumber)
 
     if (cmds::compareStrings(newPlaylistName, "cancel"))
     {
-        std::cout << "--- Operation Canceled ---" << std::endl;
+        cmds::showMessage("--- Operation Canceled ---", "notice");
         return;
     }
     else if (cmds::compareStrings(newPlaylistName, ""))
     {
-        std::cout << "Empty line found. Operation Canceled." << std::endl;
+        cmds::showMessage("Empty line found. Operation Canceled.", "warning");
         return;
     }
 
@@ -321,12 +323,12 @@ void FileManager::updatePlaylistName(int playlistNumber)
 }
 
 // allows you to edit playlist details
-void FileManager::updatePlaylist()
+void Player::updatePlaylist()
 {
     // if there are no playlists to edit
     if (checkFileEmpty())
     {
-        std::cout << "No playlists have been added, so there are no playlists to update..." << std::endl;
+        cmds::showMessage("No playlists have been added, so there are no playlists to update...", "notice");
         return;
     }
 
@@ -340,7 +342,7 @@ void FileManager::updatePlaylist()
     // if the playlist does not exist
     if ((chosenPlaylist > playlists.size()) && (chosenPlaylist != 0))
     {
-        std::cout << "Error, could not find playlist... Does it exist?" << std::endl;
+        cmds::showMessage("Could not find playlist... Does it exist?", "warning");
         updatePlaylist();
         return;
     }
@@ -377,23 +379,23 @@ void FileManager::updatePlaylist()
         rewriteFile(rewritePlaylists(chosenPlaylist, LOCAL, ""));
         break;
     case 0:
-        std::cout << "Playlist not updated" << std::endl;
+        cmds::showMessage("Playlist not updated", "warning");
         return;
         break;
     default:
-        std::cout << "Invalid option" << std::endl;
+        cmds::showMessage("Invalid option", "warning");
         updatePlaylist();
         break;
     }
 }
 
 // delete a playlist
-void FileManager::removePlaylist()
+void Player::removePlaylist()
 {
     // make sure threre is a playlist to delete
     if (checkFileEmpty())
     {
-        std::cout << "No playlists have been added, so there are no playlists to remove..." << std::endl;
+        cmds::showMessage("No playlists have been added, so there are no playlists to remove...", "notice");
         return;
     }
 
@@ -406,7 +408,7 @@ void FileManager::removePlaylist()
     // if the playlist they chose does not exists
     if ((chosenPlaylist > playlists.size()) && (chosenPlaylist != 0))
     {
-        std::cout << "Error, could not find playlist... Does it exist?" << std::endl;
+        cmds::showMessage("Could not find playlist... Does it exist?", "warning");
         removePlaylist();
         return;
     }
@@ -423,16 +425,17 @@ void FileManager::removePlaylist()
     // if they don't want to delete the playlist
     if (!cmds::compareStrings("y", confirmDelete))
     {
-        std::cout << "Playlist not deleted" << std::endl;
+        cmds::showMessage("Playlist not deleted", "notice");
         return;
     }
 
     std::string newList = rewritePlaylists(chosenPlaylist, DELETE, "");
     rewriteFile(newList);
+    cmds::showMessage("Playlist deleted", "warning");
 }
 
-// print out playlists to termina
-void FileManager::showPlaylists()
+// print out playlists to terminal
+void Player::showPlaylists()
 {
     std::string line;
     std::ifstream fPlaylistFile(getFileName()); //gets input from the file
@@ -459,7 +462,7 @@ void FileManager::showPlaylists()
 }
 
 // returns the playlists as well as displaying it in the terminal
-std::vector<std::string> FileManager::getAndShowPlaylists()
+std::vector<std::string> Player::getAndShowPlaylists()
 {
     std::string line;
     std::ifstream fPlaylistFile(getFileName()); //gets input from the file
@@ -504,7 +507,7 @@ std::vector<std::string> FileManager::getAndShowPlaylists()
 }
 
 // prints out the player (mpv) controls to the terminal
-void FileManager::displayPlayerControls()
+void Player::displayPlayerControls()
 {
     std::cout << "\nPlayer Controls:" << std::endl;
     std::cout << "\t[SPACE] - Pause\t\t\tm - Mute" << std::endl;
@@ -515,7 +518,7 @@ void FileManager::displayPlayerControls()
 }
 
 // gets if the user wants to shuffle the playlist
-bool FileManager::shufflePlaylist()
+bool Player::shufflePlaylist()
 {
     std::cout << "Would you like to shuffle the playlists? [y/n]: ";
     std::string doTheShuffle;
@@ -531,18 +534,18 @@ bool FileManager::shufflePlaylist()
     }
     else
     {
-        std::cout << "Invalid option..." << std::endl;
+        cmds::showMessage("Invalid option...", "warning");
         return shufflePlaylist();
     }
 }
 
 // if you want to play multiple playlists at once
-void FileManager::playPlaylists()
+void Player::playPlaylists()
 {
     // if the playlist file is empty
     if (checkFileEmpty())
     {
-        std::cout << "No playlists have been added..." << std::endl;
+        cmds::showMessage("No playlists have been added, playlist file is empty.", "warning");
         return;
     }
 
@@ -554,12 +557,12 @@ void FileManager::playPlaylists()
     std::getline(std::cin, itemsToPlay);
 
     // remove white spaces before and after string
-    itemsToPlay = cmds::skinStr(itemsToPlay);
+    itemsToPlay = cmds::trimStr(itemsToPlay);
 
     // nothing was entered
     if (itemsToPlay.length() < 1)
     {
-        std::cout << "No playlist(s) found." << std::endl;
+        cmds::showMessage("No playlist chosen. Canceled.", "warning");
         return;
     }
 
@@ -577,7 +580,7 @@ void FileManager::playPlaylists()
             // if letters were found inide the input
             if (!regex_match(num, rep))
             {
-                std::cout << "Only numbers allowed in the input." << std::endl;
+                cmds::showMessage("Only numbers allowed in the input.", "warning");
 
                 return;
             }
@@ -601,13 +604,13 @@ void FileManager::playPlaylists()
         // check if the playlist exists and if they want to cancel
         if ((playlistNum > playlists.size()) && (playlistNum != 0))
         {
-            std::cout << "Error, could not find playlist nr: " << playlistNum << "... Does it exist?" << std::endl;
+            cmds::showMessage("Error, could not find playlist nr: " + std::to_string(playlistNum) + "... Does it exist?", "warning");
             playPlaylists();
             return;
         }
         else if (playlistNum == 0)
         {
-            std::cout << "Canceled." << std::endl;
+            cmds::showMessage("Canceled.", "warning");
             return;
         }
 
@@ -669,7 +672,7 @@ void FileManager::playPlaylists()
     }
     else
     {
-        std::cout << "Invalid option..." << std::endl;
+        cmds::showMessage("Invalid option...", "warning");
         playPlaylists();
         return;
     }
@@ -689,7 +692,7 @@ void FileManager::playPlaylists()
 }
 
 // search if the playlist name already exists in the file
-bool FileManager::checkPlaylistExists(std::string playlistName)
+bool Player::checkPlaylistExists(std::string playlistName)
 {
     std::string line, playlist;
     std::ifstream fPlaylistFile(getFileName()); //gets input from the file
@@ -707,8 +710,7 @@ bool FileManager::checkPlaylistExists(std::string playlistName)
         if (cmds::compareStrings(playlist, playlistName))
         {
             fPlaylistFile.close();
-            std::cout << "That playlist already exists (name dulpicate)...\n"
-                      << std::endl;
+            cmds::showMessage("That playlist already exists (name dulpicate)...\n", "warning");
             return true;
         }
     }
@@ -718,15 +720,9 @@ bool FileManager::checkPlaylistExists(std::string playlistName)
     // makes sure that the user doesn't add a ~ or ` in the name of the playlist
     for (int i = 0; i < playlistName.length(); i++)
     {
-        if (playlistName[i] == '~')
+        if ((playlistName[i] == '~') || (playlistName[i] == '`'))
         {
-            std::cout << "Invalid character found '~'" << std::endl;
-
-            return true;
-        }
-        else if (playlistName[i] == '`')
-        {
-            std::cout << "Invalid character found '`'" << std::endl;
+            cmds::showMessage("Invalid character found '~' or '`'", "warning");
 
             return true;
         }
@@ -736,7 +732,7 @@ bool FileManager::checkPlaylistExists(std::string playlistName)
 }
 
 // add a playlist to list of playlist
-void FileManager::addPlaylist()
+void Player::addPlaylist()
 {
     std::cout << "Please enter a name for the new playlist(type cancel to cancel): ";
     std::string playlistName;
@@ -746,7 +742,7 @@ void FileManager::addPlaylist()
     // check if user wants to cancel
     if (cmds::compareStrings(playlistName, "cancel"))
     {
-        std::cout << "--- Operation Canceled ---" << std::endl;
+        cmds::showMessage("--- Operation Canceled ---", "notice");
 
         return;
     }
@@ -772,7 +768,7 @@ void FileManager::addPlaylist()
 
     if (!fCustomPlaylists.is_open())
     {
-        std::cout << "Couldn't open 'custom-playlists.txt'" << std::endl;
+        cmds::showMessage("Couldn't open 'custom-playlists.txt', check read & write permissions.", "warning");
         return;
     }
 
@@ -800,7 +796,7 @@ void FileManager::addPlaylist()
         // I can't remember why I restrict it, it's probably because of mpv
         if (playlistLocation.length() > 60)
         {
-            std::cout << "Path to playlist is too long. Try moving it to a folder closer to root (/)" << std::endl;
+            cmds::showMessage("Path to playlist is too long. Try moving it to a folder closer to root (/)", "warning");
             fCustomPlaylists.close();
 
             return;
@@ -818,7 +814,7 @@ void FileManager::addPlaylist()
 
         if (cmds::compareStrings(playlistLink, "cancel"))
         {
-            std::cout << "--- Operation Canceled ---" << std::endl;
+            cmds::showMessage("--- Operation Canceled ---", "notice");
             fCustomPlaylists.close();
 
             return;
@@ -831,17 +827,17 @@ void FileManager::addPlaylist()
     else // if anything other than 1 or 2 was entered
     {
         fCustomPlaylists.close();
-        std::cout << "Cancel" << std::endl;
+        cmds::showMessage("Cancel", "notice");
 
         return;
     }
 
     fCustomPlaylists.close();
-    std::cout << "--- Playlist Added ---" << std::endl;
+    cmds::showMessage("--- Playlist Added ---", "success");
 }
 
 // gets the users username
-std::string FileManager::getUsernameLinux()
+std::string Player::getUsernameLinux()
 {
     char username[255];
     FILE *name;
@@ -853,7 +849,7 @@ std::string FileManager::getUsernameLinux()
 }
 
 // return the name/location of the file where the playlists are stored
-std::string FileManager::getFileName()
+std::string Player::getFileName()
 {
     std::string fileName = "/home/" + getUsernameLinux();
     fileName.erase(std::remove(fileName.begin(), fileName.end(), '\n'), fileName.end());
@@ -862,7 +858,7 @@ std::string FileManager::getFileName()
 }
 
 // this does the same as getFileName, but for a custom file and not the playlists file
-std::string FileManager::getFileName(std::string tempFileName)
+std::string Player::getFileName(std::string tempFileName)
 {
     std::string fileName = "/home/" + getUsernameLinux();
     fileName.erase(std::remove(fileName.begin(), fileName.end(), '\n'), fileName.end());
@@ -871,7 +867,7 @@ std::string FileManager::getFileName(std::string tempFileName)
 }
 
 // checks if file is empty
-bool FileManager::checkFileEmpty()
+bool Player::checkFileEmpty()
 {
     std::ifstream fFile(getFileName());
     bool empty = fFile.peek() == std::ifstream::traits_type::eof(); // true u
@@ -881,6 +877,6 @@ bool FileManager::checkFileEmpty()
 }
 
 // Destructor
-FileManager::~FileManager()
+Player::~Player()
 {
 }

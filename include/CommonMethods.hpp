@@ -8,13 +8,12 @@ namespace cmds
     int numberInput();
 
     bool compareStrings(std::string str1, std::string str2);
-    bool sii(std::string str); // sii = string is integer
 
     void clearInput();
     void clearInput(int characters);
+    void showMessage(std::string message, std::string type = "normal", bool breakLine = true);
 
-    std::string skinStr(std::string str);
-
+    std::string trimStr(std::string str);
 }
 
 #endif // COMMON_METHODS
