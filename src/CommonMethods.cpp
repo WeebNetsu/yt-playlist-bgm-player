@@ -1,6 +1,5 @@
 #include <iostream>
 #include <string>
-#include <algorithm> // to use std::all_of
 
 #include "../include/CommonMethods.hpp"
 #include "../include/Color.hpp"
@@ -23,7 +22,7 @@ namespace cmds
 	};
 
 	bool compareStrings(std::string str1, std::string str2)
-	{ // compare 2 strings with each other
+	{ // strickly compare 2 strings with each other
 		if (str1.length() == str2.length())
 		{ // are they the same length?
 			for (int i = 0; i < str1.length(); i++)

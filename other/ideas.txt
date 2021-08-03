@@ -1,13 +1,12 @@
-bgmplayer ideas:
-REFRACTOR THE CODE!
+Add new way to parse flags with TCLAP (http://tclap.sourceforge.net/manual.html#EXAMPLE)
+
 bgmplayer -add:nameOfPlaylist playlistLink -> add playlist in one line
 bgmplayer -delete:nameOfPlaylist -> delete playlist in one line
 bgmplayer -deletenum:playlistNumber -> delete playlist via it's number given to it
 bgmplayer -single:[link] -> play single link and don't save it as playlist
 bgmplayer -video -> enable video
-bgmplayer --flags -> display a list of usable flags
+bgmplayer --help -> display a list of usable flags
 bgmplayer -random -> choose a random playlist and play it
-bgmplayer -download:[link] -> download from link using yt-dlc
 
 (users should have accounts and this will use accounts)
 [Use auth, this directs the user to a website they can sign up on, and login with]
@@ -15,7 +14,7 @@ bgmplayer -download:[link] -> download from link using yt-dlc
 bgmplayer --backup -> upload playlist file to the internet 
 bgmplayer --restore -> download backed up playlist file
 
-Add silent flag to output so mpv does not display so much data
 Add flags list to help text
-Update readme to say this is just a frontend for mpv
-Update github to say this is just a frontend for mpv
+Allow user to add custom path to custom.txt file
+
+FIX: Editing Playlists is still buggy!

@@ -97,6 +97,7 @@ void processAnswer(int option, std::vector<std::string> menuOptions, Player *fm,
 
 void manageFlags(std::vector<std::string> &arguments, Player &fm)
 {
+    // single flag options will not execute any other commands other than itself.
     std::vector<std::string> singleFlagOptions = {"--help", "--list"};
 
     std::string args_1 = arguments[0];
@@ -201,20 +202,18 @@ int main(int argc, char const *argv[])
 
     std::vector<std::string> menuOptions = {"Play Playlists", "Add Playlist", "Edit Playlist", "Remove Playlist", "Help"};
 
-    Player fm("custom-playlists.txt");
-
-    // single flag options will not execute any other commands other than itself.
     // we use vector since we can for through the array and check if anything is found
-    std::vector<std::string> singleFlagOptions = {"--help", "--list"};
     std::vector<std::string> arguments;
 
-    for (int i = 1; i < argc; i++) // so we don't receive the file name
+    for (int i = 1; i < argc; i++) // i = 1 -> so we don't receive the executable file name at index 0
     {
         arguments.push_back(argv[i]);
     }
 
+    Player fm;
     if (arguments.size() > 0) // if arguments were passed in
     {
+        // this will manage all the flags that were passed in
         manageFlags(arguments, fm);
 
         return 0;

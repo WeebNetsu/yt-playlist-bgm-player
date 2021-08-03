@@ -12,36 +12,13 @@
 #include "../include/Player.hpp"
 #include "../include/CommonMethods.hpp"
 
-// Constructor
+// create a new bgmplayer, with a custom file name
 Player::Player(std::string fileName)
 {
     this->fileName = fileName;
 
-    // the below code will setup everything if this is the first time the application is being run
-    std::string location = "/home/" + getUsernameLinux();
-    location.erase(std::remove(location.begin(), location.end(), '\n'), location.end());
-    location += "/.ytbgmpcli";
-
-    const char *loc = location.c_str();
-
-    struct stat _st = {0};
-    if (stat(loc, &_st) == -1) // if location does not exist
-    {
-        cmds::showMessage("Could not find .ytbgmpcli folder. Creating folder.", "notice");
-
-        mkdir(loc, 0777);
-    }
-
-    struct stat _st2 = {0};
-
-    if (stat(getFileName().c_str(), &_st2) == -1) // if custom links file does not exist
-    {
-        cmds::showMessage("Could not find customs file. Creating file.", "notice");
-
-        std::ofstream fFile(getFileName().c_str());
-        fFile << "";
-        fFile.close();
-    }
+    // the below will setup everything if you don't have the playlists file in ~/.ytbgmpcli/
+    setup();
 }
 
 // returns all the playlists but does not output to the terminal
@@ -246,6 +223,36 @@ std::string Player::rewritePlaylists(int playlistNumber, ModType modType, std::s
     }
 
     return newList;
+}
+
+// will setup the playlist files if the user doesn't have one yet
+void Player::setup()
+{
+    // the below code will setup everything if this is the first time the application is being run
+    std::string location = "/home/" + getUsernameLinux();
+    location.erase(std::remove(location.begin(), location.end(), '\n'), location.end());
+    location += "/.ytbgmpcli";
+
+    const char *loc = location.c_str();
+
+    struct stat _st = {0};
+    if (stat(loc, &_st) == -1) // if location does not exist
+    {
+        cmds::showMessage("Could not find .ytbgmpcli folder. Creating folder.", "notice");
+
+        mkdir(loc, 0777);
+    }
+
+    struct stat _st2 = {0};
+
+    if (stat(getFileName().c_str(), &_st2) == -1) // if custom links file does not exist
+    {
+        cmds::showMessage("Could not find customs file. Creating file.", "notice");
+
+        std::ofstream fFile(getFileName().c_str());
+        fFile << "";
+        fFile.close();
+    }
 }
 
 // edit playlist file (modifies file)
