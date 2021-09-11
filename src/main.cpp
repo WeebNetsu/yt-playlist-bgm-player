@@ -100,7 +100,17 @@ void manageFlags(std::vector<std::string> &arguments, Player &fm)
     // single flag options will not execute any other commands other than itself.
     std::vector<std::string> singleFlagOptions = {"--help", "--list"};
 
-    std::string args_1 = arguments[0];
+    try
+    {
+        // check if first argument is a number (to choose playlist)
+        int args_1 = std::stoi(arguments[0]);
+    }
+    catch(...)
+    {
+        cmds::showMessage("Error, \"" + arguments[0] + "\" is not a valid playlist number.", "error");
+        return;
+    }
+    
     int playlistToPlay = -1;
     std::vector<int> playlists;
 
@@ -173,7 +183,6 @@ void manageFlags(std::vector<std::string> &arguments, Player &fm)
                 catch (...)
                 {
                     cmds::showMessage("Error with argument input. \"" + i + "\" is either an invalid argument, or a number lower than 1.", "error");
-
                     return;
                 }
             }
