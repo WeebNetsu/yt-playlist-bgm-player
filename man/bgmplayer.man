@@ -1,0 +1,33 @@
+.TH YT\-PLAYLIST\-BGM\-PLAYER 1 2021-08-24 GNU
+.\" The above is the application name, 1 (page?), Last major update date, GNU (or Linux)
+.\" You have to escape "-" otherwise it will be seen as a new line
+
+.SH NAME
+bgmplayer \- Background music player for YouTube
+
+.SH SYNOPSIS
+.B bgmplayer 
+.\" This will define how to use the program
+.\" \f - allow inline styling (so \fB\f = .B but just between \fR] (\fR -> set styling back to regular mode)
+3
+[\fB\-no\-shuffle\fR]
+[\fB\-no\-loop\fR]
+
+.B bgmplayer 
+.\" This will define how to use the program
+.\" \f - allow inline styling (so \fB\f = .B but just between \fR] (\fR -> set styling back to regular mode)
+[\fB\-\-help\fR]
+
+.SH DESCRIPTION
+.B bgmplayer
+CLI application intended to help you play music in the background from YouTube with MPV and youtube-dlc
+
+.SH OPTIONS
+.\" .TP will make the 2nd line be indented
+.TP
+.\" .BR -> every second word will be regular and every other will be bold
+.BR \-no\-shuffle " "
+Make sure the playlist does not get shuffled
+
+.SH AUTHOR
+Stephen <stephenvdw.business@gmail.com>
