@@ -11,19 +11,40 @@ chmod +x bgmplayer
 [ ! -d "$HOME/bin" ] && echo "Could not find $HOME/bin folder... Creating it." && mkdir -p $HOME/bin 
 [ -d "$HOME/bin" ] && cp bgmplayer $HOME/bin
 
-echo "Installing dependencies. (apt & wget) (will need sudo permissions)"
-sudo add-apt-repository ppa:mc3man/mpv-tests -y && sudo apt update && sudo apt-get remove mpv -y && sudo apt install mpv python -y 
+echo "Getting package manager..."
 
-youtube-dlc --version || ( sudo wget https://github.com/blackjack4494/yt-dlc/releases/latest/download/youtube-dlc -O /usr/local/bin/youtube-dlc && sudo chmod a+rx /usr/local/bin/youtube-dlc )
+MANAGER="error"
+apt -v && MANAGER="apt"
+eopkg --version && MANAGER="eopkg"
+pacman --version && MANAGER="pacman"
 
-# echo "Install finished! Run the application with this command: bgmplayer"
+echo "Installing dependencies. (will need sudo permissions)"
+if [[ $MANAGER == "pacman" ]]; then
+   sudo pacman -S mpv python --noconfirm
+elif [[ $MANAGER == "apt" ]]; then
+   sudo add-apt-repository ppa:mc3man/mpv-tests -y && sudo apt update && sudo apt-get remove mpv -y && sudo apt install mpv python -y 
+elif [[ $MANAGER == "eopkg" ]]; then
+   sudo eopkg install mpv python3
+else
+   echo "ERROR! Could not find your package manager! If you're not running Apt, Eopkg or Pacman, please install MPV and Python 3 manually."
+   exit 1
+fi
 
-read -p 'Install finished! You have to reboot before you can use bgmplayer. Reboot [y/n]: ' reboot
+youtube-dlc --version || ( sudo wget https://github.com/blackjack4494/yt-dlc/releases/latest/download/youtube-dlc -O $HOME/bin/youtube-dlc && sudo chmod a+rx $HOME/bin/youtube-dlc )
+
+echo "Adding $HOME/bin to PATH."
+echo -e '\nexport PATH="$HOME/bin:$PATH"' >> $HOME/.bashrc
+export PATH="$HOME/bin:$PATH"
+
+echo "Install Finished!"
+echo "It might not work until after a reboot!"
+
+read -p 'Would you like to reboot? [y/n]: ' reboot
 
 if [[ $reboot == "y" ]]; then
-   echo "Will reboot in 15 seconds. (ctrl+c to cancel reboot)"
-   sleep 15
-   init 6
+   echo "Will reboot in 20 seconds. Close any running programs, or ctrl+c to cancel."
+   sleep 20
+   reboot
 fi
 
 # STILL WORKING ON THIS

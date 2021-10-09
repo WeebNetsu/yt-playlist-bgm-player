@@ -127,7 +127,7 @@ void Player::instantPlayPlaylists(std::vector<int> playlistsToPlay, std::map<std
     }
 
     // basic mpv command: mpv playlist --no-video youtube-dl-location
-    command = "mpv " + playlistsCommand + " --no-video --script-opts=ytdl_hook-ytdl_path=/usr/local/bin/youtube-dlc";
+    command = "mpv " + playlistsCommand + " --no-video --script-opts=ytdl_hook-ytdl_path=$HOME/bin/youtube-dlc";
     if (flags["shuffle"]) // if the user wants to shuffle
     {
         command += " --shuffle";
@@ -671,11 +671,11 @@ void Player::playPlaylists()
     // if they want to loop
     if (cmds::compareStrings("y", loop) || cmds::compareStrings("yes", loop))
     {
-        command = "mpv " + playlistsCommand + " --no-video --loop-playlist --script-opts=ytdl_hook-ytdl_path=/usr/local/bin/youtube-dlc";
+        command = "mpv " + playlistsCommand + " --no-video --loop-playlist --script-opts=ytdl_hook-ytdl_path=$HOME/bin/youtube-dlc";
     } // do not delete else if
     else if (cmds::compareStrings("n", loop) || cmds::compareStrings("no", loop))
     {
-        command = "mpv " + playlistsCommand + " --no-video --script-opts=ytdl_hook-ytdl_path=/usr/local/bin/youtube-dlc";
+        command = "mpv " + playlistsCommand + " --no-video --script-opts=ytdl_hook-ytdl_path=$HOME/bin/youtube-dlc";
     }
     else
     {

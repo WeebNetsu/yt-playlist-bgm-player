@@ -6,13 +6,12 @@ Notes:
 <ul>
     <!-- it may have Mac support, but I don't have a Mac to test it on -->
     <li>This currently only tested on Linux (and probably works on Mac), I'm planning to give it support for other OSs in the future.</li>
-    <li>It is only an CLI interface for MPV, less typing, easier usage ect.</li>
 </ul>
 
 ## Content
 
 <ul>
-    <li><a href="#howToRun">How to run</a></li>
+    <li><a href="#howToRun">How to (install and) run</a></li>
     <li><a href="#howToUpdate">How to update</a></li>
     <li><a href="#compilingTheCode">Compiling the code</a></li>
     <li><a href="#controls">Controls</a></li>
@@ -34,20 +33,28 @@ Notes:
 
 <span id="howToRun"></span>
 
-## How to run
+## How to (install and) run
 
-<i>Note: You should have a stable internet connection to use the installer and YouTube playlist player.</i>
+*Note: You should have a stable internet connection to use the installer and YouTube playlist player. Also, the installer only works on **Ubuntu**, **Arch** and **Solus** based systems*
 
-Clone or download the files and make sure the ubuntu_based_installer.sh file is executable with:<br>
-<code>chmod +x ubuntu_based_installer.sh</code><br>
-Run the ubuntu_based_installer.sh file (debian/ubuntu based distros only) and you're ready to run the application! To run the application, execute the following command in your terminal:<br><code>bgmplayer</code><br>
-<b>If you don't have an Ubuntu based Linux distro</b>, you can compile the code (or use the prebuilt "bgmplayer" file) and just mimic everything happening in the ubuntu_based_installer.sh, but modified for your system (so not apt, but pacman or whatever package manager you use).
+Clone or download the files and make sure the installer.sh file is executable with:<br>
+`chmod +x installer.sh`<br>
+Run the installer.sh file (Ubuntu, Arch & Solus based distros only) and you're ready to run the application! To run the application, execute the following command in your terminal:<br>`bgmplayer`<br>
+**If you don't have an Ubuntu, Arch or Solus based Linux distro**, you can compile the code (or use the prebuilt "bgmplayer" file) and just mimic everything happening in the installer.sh, but modified for your system. The steps are simple:
+1. Compile the code into an executable (optional)
+1.5. If you compiled it yourself, rename the executable to "bgmplayer"
+2. Make the executable (prebuilt, or manually compiled) runnable with `chmod +x bgmplayer`
+3. Move/Copy the file to your $HOME/bin directory (create it if it does not exist)
+4. Install MPV and Python 3
+5. Install YouTube-dlc with `youtube-dlc --version || ( sudo wget https://github.com/blackjack4494/yt-dlc/releases/latest/download/youtube-dlc -O $HOME/bin/youtube-dlc && sudo chmod a+rx $HOME/bin/youtube-dlc )`
+6. Add $HOME/bin to PATH (if not there already). (Put code inside .bashrc to avoid having to do it on every boot)
+7. Reboot (optional)
 
 <span id="howToUpdate"></span>
 
 ## How to update
 
-If the application has a new version, you can redownload the source code and run the ubuntu_based_installer.sh file. It will update whatever should be updated. If you <b>don't have an Ubuntu based system</b> or don't want to reinstall it, just move the "bgmplayer" file to the $HOME/bin folder.
+If the application has a new version, you can redownload the source code and run the installer.sh file. It will update whatever should be updated, or just download and move the "bgmplayer" file to the $HOME/bin folder.
 
 <span id="compilingTheCode"></span>
 
