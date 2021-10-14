@@ -14,19 +14,16 @@ chmod +x bgmplayer
 echo "Getting package manager..."
 
 MANAGER="error"
-apt -v && MANAGER="apt"
-eopkg --version && MANAGER="eopkg"
+apt version && MANAGER="apt"
 pacman --version && MANAGER="pacman"
 
 echo "Installing dependencies. (will need sudo permissions)"
 if [[ $MANAGER == "pacman" ]]; then
    sudo pacman -S mpv python --noconfirm
 elif [[ $MANAGER == "apt" ]]; then
-   sudo add-apt-repository ppa:mc3man/mpv-tests -y && sudo apt update && sudo apt-get remove mpv -y && sudo apt install mpv python -y 
-elif [[ $MANAGER == "eopkg" ]]; then
-   sudo eopkg install mpv python3
+   sudo add-apt-repository ppa:mc3man/mpv-tests -y && sudo apt update && sudo apt-get remove mpv -y && sudo apt install mpv python -y
 else
-   echo "ERROR! Could not find your package manager! If you're not running Apt, Eopkg or Pacman, please install MPV and Python 3 manually."
+   echo "ERROR! Could not find your package manager! If you're not running Apt or Pacman, please install MPV and Python 3 manually."
    exit 1
 fi
 
