@@ -27,7 +27,7 @@ public:
     void setup();
     void addPlaylist();
     void playPlaylists();
-    void randomPlayPlaylists();
+    void randomPlayPlaylists(std::map<std::string, bool> flags);
     void showPlaylists();
     void removePlaylist();
     void updatePlaylist();

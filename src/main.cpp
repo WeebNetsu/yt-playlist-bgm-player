@@ -98,7 +98,7 @@ void processAnswer(int option, std::vector<std::string> menuOptions, Player *fm,
 void manageFlags(std::vector<std::string> &arguments, Player &fm)
 {
     // single flag options will not execute any other commands other than itself.
-    std::vector<std::string> singleFlagOptions = {"--help", "--list"};
+    std::vector<std::string> singleFlagOptions = {"--help", "--list", "--random"};
     
     int playlistToPlay = -1;
     std::vector<int> playlists;
@@ -138,6 +138,12 @@ void manageFlags(std::vector<std::string> &arguments, Player &fm)
                     cmds::showMessage("Your Playlists:");
 
                     fm.showPlaylists();
+                }
+                else if (i == singleFlagOptions.at(2)) // --random
+                {
+                    cmds::showMessage("Playing your playlists at random", "notice");
+
+                    fm.randomPlayPlaylists(playerFlagput);
                 }
             }
         }
@@ -182,7 +188,7 @@ void manageFlags(std::vector<std::string> &arguments, Player &fm)
             cmds::showMessage("Error, no playlist number specified.", "error");
             return;
         }
-        // fm.randomPlayPlaylists();
+
         fm.instantPlayPlaylists(playlists, playerFlagput);
     }
 }

@@ -192,6 +192,10 @@ Example of a single answer flag: <code>bgmplayer --help</code>
         <td>--list</td>
         <td>Displays all playlists</td>
     </tr>
+    <tr>
+        <td>--random</td>
+        <td>Play all your playlists in random order</td>
+    </tr>
 </table>
 
 <span id="multiAnswerFlags"></span>

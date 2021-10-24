@@ -93,13 +93,17 @@ std::vector<std::string> Player::generateCleanList(std::vector<int> playlistsToP
 }
 
 // Play playlists in random order. Not being
-void Player::randomPlayPlaylists()
+// playerFlagput will automatically pass in flags and their defaults
+void Player::randomPlayPlaylists(std::map<std::string, bool> flags)
 {
-    // TODO: fullyRandom will choose multiple playlists and play them at default by default
-    // std::vector<std::string> playlists = this->getPlaylistsDontShow();
-    // std::vector<int> playlistNumbers;
+    std::vector<int> playlists;
+    for(int i = 0; i < getPlaylistsDontShow().size(); i++){
+        playlists.push_back(i + 1); // just pass in all the playlist numbers
+    }
 
-    // this->instantPlayPlaylists(playlistNumbers);
+    flags["loop"] = false; // we do not want the playlists to loop
+
+    this->instantPlayPlaylists(playlists, flags);
 }
 
 // returns all the playlists but does not output to the terminal
