@@ -6,7 +6,6 @@
 #include <unistd.h>    // to get username
 #include <algorithm>   // so we can remove \n from end of strings
 #include <regex>       // used when working with local files
-// #include <mpv/client.h> // to use mpv without system()
 #include <map>
 
 #include "../include/Player.hpp"
@@ -19,6 +18,88 @@ Player::Player(std::string fileName)
 
     // the below will setup everything if you don't have the playlists file in ~/.ytbgmpcli/
     setup();
+}
+
+std::vector<std::string> Player::generateCleanList(std::vector<int> playlistsToPlay, bool usingMenu = false)
+{
+    std::vector<std::string> playlists = getPlaylistsDontShow(); // get links without displaying it to the user
+    // cleanlist is basically the playlists vector but modified to be playable
+    // playlists vector: "/location/to the/folder"
+    // cleanList vector: "/location/to\ the/folder/*"
+    std::vector<std::string> cleanList;
+    for (int playlistNum : playlistsToPlay)
+    {
+        /*
+            if the playlist number is larger than the amount of links in the playlist
+            since playlists are counted we can make sure that if 10 was counted and the user
+            entered 11 then we know the playlist did not exitst (note: we start counting at 1, not 0)
+        */
+        if (usingMenu)
+        {
+            if ((playlistNum > playlists.size()) && (playlistNum != 0))
+            {
+                cmds::showMessage("Error, could not find playlist nr: " + std::to_string(playlistNum) + "... Does it exist?", "warning");
+                playPlaylists();
+                return {};
+            }
+            else if (playlistNum == 0)
+            {
+                cmds::showMessage("Canceled.", "warning");
+                return {};
+            }
+        }
+        else
+        {
+            if (playlistNum > playlists.size())
+            {
+                cmds::showMessage("Could not find playlist nr: " + std::to_string(playlistNum) + "... Does it exist?", "error");
+                return {};
+            }
+        }
+
+        // playlistNum - 1 since playlist 2 will be at index 1
+        std::string playlist = playlists[playlistNum - 1];
+
+        while (playlist.size())
+        {
+            //the number 33 refers to ascii character 33... the first printable character
+            if (playlist[0] < 33)
+            {
+                playlist.erase(playlist.begin()); //remove all leading whitespace
+            }
+            else if (playlist[playlist.size() - 1] < 33)
+            {
+                playlist.erase(playlist.size() - 1); //remove all trailing whitespace
+            }
+            else
+            {
+                if (playlist[0] == '/')
+                {
+                    std::regex rep(" "); // what should be found
+                    // replace all spaces with "\\ "
+                    playlist = regex_replace(playlist, rep, "\\ ");
+                    cleanList.push_back(playlist.append("/*"));
+                }
+                else
+                {
+                    cleanList.push_back(playlist);
+                }
+                break;
+            }
+        }
+    }
+
+    return cleanList;
+}
+
+// Play playlists in random order. Not being
+void Player::randomPlayPlaylists()
+{
+    // TODO: fullyRandom will choose multiple playlists and play them at default by default
+    // std::vector<std::string> playlists = this->getPlaylistsDontShow();
+    // std::vector<int> playlistNumbers;
+
+    // this->instantPlayPlaylists(playlistNumbers);
 }
 
 // returns all the playlists but does not output to the terminal
@@ -65,55 +146,12 @@ void Player::instantPlayPlaylists(std::vector<int> playlistsToPlay, std::map<std
         return;
     }
 
-    std::vector<std::string> playlists = getPlaylistsDontShow(); // get links without displaying it to the user
-
     // cleanlist is basically the playlists vector but modified to be playable
     // playlists vector: "/location/to the/folder"
     // cleanList vector: "/location/to\ the/folder/*"
-    std::vector<std::string> cleanList;
-    for (int playlistNum : playlistsToPlay)
-    {
-        /*
-            if the playlist number is larger than the amount of links in the playlist
-            since playlists are counted we can make sure that if 10 was counted and the user
-            entered 11 then we know the playlist did not exitst (note: we start counting at 1, not 0)
-        */
-        if (playlistNum > playlists.size())
-        {
-            cmds::showMessage("Could not find playlist nr: " + std::to_string(playlistNum) + "... Does it exist?", "error");
-            return;
-        }
-
-        // playlistNum - 1 since playlist 2 will be at index 1
-        std::string playlist = playlists[playlistNum - 1];
-
-        while (playlist.size())
-        {
-            //the number 33 refers to ascii character 33... the first printable character
-            if (playlist[0] < 33)
-            {
-                playlist.erase(playlist.begin()); //remove all leading whitespace
-            }
-            else if (playlist[playlist.size() - 1] < 33)
-            {
-                playlist.erase(playlist.size() - 1); //remove all trailing whitespace
-            }
-            else
-            {
-                if (playlist[0] == '/')
-                {
-                    std::regex rep(" "); // what should be found
-                    // replace all spaces with "\\ "
-                    playlist = regex_replace(playlist, rep, "\\ ");
-                    cleanList.push_back(playlist.append("/*"));
-                }
-                else
-                {
-                    cleanList.push_back(playlist);
-                }
-                break;
-            }
-        }
+    std::vector<std::string> cleanList = generateCleanList(playlistsToPlay);
+    if(cleanList.size() < 1){
+        return;
     }
 
     // the command that will be given to the terminal
@@ -605,52 +643,11 @@ void Player::playPlaylists()
     }
 
     // clean list is the list but fixed to be a good input for mpv
-    std::vector<std::string> cleanList;
-    for (int playlistNum : lists)
-    {
-        // check if the playlist exists and if they want to cancel
-        if ((playlistNum > playlists.size()) && (playlistNum != 0))
-        {
-            cmds::showMessage("Error, could not find playlist nr: " + std::to_string(playlistNum) + "... Does it exist?", "warning");
-            playPlaylists();
-            return;
-        }
-        else if (playlistNum == 0)
-        {
-            cmds::showMessage("Canceled.", "warning");
-            return;
-        }
-
-        std::string playlist = playlists[playlistNum - 1];
-
-        while (playlist.size())
-        {
-            //the number 33 refers to ascii character 33... the first printable character
-            if (playlist[0] < 33)
-            {
-                playlist.erase(playlist.begin()); //remove all leading whitespace
-            }
-            else if (playlist[playlist.size() - 1] < 33)
-            {
-                playlist.erase(playlist.size() - 1); //remove all trailing whitespace
-            }
-            else
-            {
-                if (playlist[0] == '/')
-                {
-                    std::regex rep(" ");
-                    playlist = regex_replace(playlist, rep, "\\ ");
-                    cleanList.push_back(playlist.append("/*"));
-                }
-                else
-                {
-                    cleanList.push_back(playlist);
-                }
-                break;
-            }
-        }
+    std::vector<std::string> cleanList = generateCleanList(lists, true);
+    if(cleanList.size() < 1){
+        return;
     }
-
+    
     bool shuffle = shufflePlaylist();
 
     std::string command; // this will be entered into the console

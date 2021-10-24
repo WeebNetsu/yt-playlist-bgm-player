@@ -27,6 +27,7 @@ public:
     void setup();
     void addPlaylist();
     void playPlaylists();
+    void randomPlayPlaylists();
     void showPlaylists();
     void removePlaylist();
     void updatePlaylist();
@@ -40,6 +41,7 @@ public:
 
     std::vector<std::string> getAndShowPlaylists();
     std::vector<std::string> getPlaylistsDontShow();
+    std::vector<std::string> generateCleanList(std::vector<int> playlistsToPlay, bool usingMenu);
 
     bool checkPlaylistExists(std::string playlistName);
     bool shufflePlaylist();

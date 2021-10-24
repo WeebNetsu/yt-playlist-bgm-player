@@ -182,7 +182,7 @@ void manageFlags(std::vector<std::string> &arguments, Player &fm)
             cmds::showMessage("Error, no playlist number specified.", "error");
             return;
         }
-        
+        // fm.randomPlayPlaylists();
         fm.instantPlayPlaylists(playlists, playerFlagput);
     }
 }
