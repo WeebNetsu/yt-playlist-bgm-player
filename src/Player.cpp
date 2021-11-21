@@ -97,7 +97,8 @@ std::vector<std::string> Player::generateCleanList(std::vector<int> playlistsToP
 void Player::randomPlayPlaylists(std::map<std::string, bool> flags)
 {
     std::vector<int> playlists;
-    for(int i = 0; i < getPlaylistsDontShow().size(); i++){
+    for (int i = 0; i < getPlaylistsDontShow().size(); i++)
+    {
         playlists.push_back(i + 1); // just pass in all the playlist numbers
     }
 
@@ -154,7 +155,8 @@ void Player::instantPlayPlaylists(std::vector<int> playlistsToPlay, std::map<std
     // playlists vector: "/location/to the/folder"
     // cleanList vector: "/location/to\ the/folder/*"
     std::vector<std::string> cleanList = generateCleanList(playlistsToPlay);
-    if(cleanList.size() < 1){
+    if (cleanList.size() < 1)
+    {
         return;
     }
 
@@ -648,10 +650,11 @@ void Player::playPlaylists()
 
     // clean list is the list but fixed to be a good input for mpv
     std::vector<std::string> cleanList = generateCleanList(lists, true);
-    if(cleanList.size() < 1){
+    if (cleanList.size() < 1)
+    {
         return;
     }
-    
+
     bool shuffle = shufflePlaylist();
 
     std::string command; // this will be entered into the console
@@ -766,6 +769,7 @@ void Player::addPlaylist()
     std::cout << "Where is your playlist? " << std::endl;
     std::cout << "1. On my machine (local) " << std::endl;
     std::cout << "2. On YouTube (online) " << std::endl;
+    std::cout << "3. Automatically " << std::endl;
     std::cout << "0. Cancel " << std::endl;
     std::cout << "> ";
     int location;
@@ -832,7 +836,44 @@ void Player::addPlaylist()
 
         fCustomPlaylists << newListItem;
     }
-    else // if anything other than 1 or 2 was entered
+    else if (location == 3) // Do it automatically
+    {
+        // NOTE: I'm planning on making this the default, although I'll keep it as a 3rd option for a few versions
+        std::cout << "Please enter path or URL (cancel to cancel): ";
+        std::string playlistLocation;
+        cmds::clearInput();
+        std::getline(std::cin, playlistLocation);
+
+        // make sure they didn't cancel
+        if (cmds::compareStrings(playlistLocation, "cancel"))
+        {
+            std::cout << "--- Operation Canceled ---" << std::endl;
+            fCustomPlaylists.close();
+
+            return;
+        }
+
+        std::string newListItem = "\n" + playlistName;
+
+        if (playlistLocation[0] == '/') // if it starts with "/", then it's local
+        {
+            // I can't remember why I restrict it, it's probably because of mpv
+            if (playlistLocation.length() > 60)
+            {
+                cmds::showMessage("Path to playlist is too long. Try moving it to a folder closer to root (/)", "warning");
+                fCustomPlaylists.close();
+
+                return;
+            }
+
+            newListItem += "`" + playlistLocation; // LOCAL
+        }else{
+            newListItem += "~" + playlistLocation; // LINK
+        }
+
+        fCustomPlaylists << newListItem;
+    }
+    else // otherwise, cancel
     {
         fCustomPlaylists.close();
         cmds::showMessage("Cancel", "notice");

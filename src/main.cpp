@@ -97,7 +97,7 @@ void processAnswer(int option, std::vector<std::string> menuOptions, Player *fm,
 
 void manageFlags(std::vector<std::string> &arguments, Player &fm)
 {
-    // single flag options will not execute any other commands other than itself.
+    // single flag options will not execute with any other commands other than itself.
     std::vector<std::string> singleFlagOptions = {"--help", "--list", "--random"};
     
     int playlistToPlay = -1;
