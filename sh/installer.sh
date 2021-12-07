@@ -6,6 +6,13 @@ if [[ $EUID -eq 0 ]]; then
    exit 1
 fi
 
+chmod +x ./compile.sh && ./compile.sh && COMPILE_SUCCESS=true
+
+if [[ $COMPILE_SUCCESS != true ]]; then
+   echo -e "\n\tError compiling program!\n"
+   exit 1
+fi
+
 echo "Adding executable file to $HOME/bin"
 chmod +x bgmplayer
 [ ! -d "$HOME/bin" ] && echo "Could not find $HOME/bin folder... Creating it." && mkdir -p $HOME/bin 
@@ -19,9 +26,9 @@ pacman --version && MANAGER="pacman"
 
 echo "Installing dependencies. (will need sudo permissions)"
 if [[ $MANAGER == "pacman" ]]; then
-   sudo pacman -S mpv python --noconfirm
-elif [[ $MANAGER == "apt" ]]; then
-   sudo add-apt-repository ppa:mc3man/mpv-tests -y && sudo apt update && sudo apt-get remove mpv -y && sudo apt install mpv python -y
+   sudo pacman -S mpv python less --noconfirm
+elif [[ $MANAGER == "apt" ]]; then # idk what cmake is on ubuntu yet, so I can't add it to installation yet
+   sudo add-apt-repository ppa:mc3man/mpv-tests -y && sudo apt update && sudo apt-get remove mpv -y && sudo apt install mpv python less -y
 else
    echo "ERROR! Could not find your package manager! If you're not running Apt or Pacman, please install MPV and Python 3 manually."
    exit 1

@@ -11,7 +11,7 @@ Notes:
 ## Content
 
 <ul>
-    <li><a href="#howToRun">How to (install and) run</a></li>
+    <li><a href="#howToRun">How to install and run</a></li>
     <li><a href="#howToUpdate">How to update</a></li>
     <li><a href="#compilingTheCode">Compiling the code</a></li>
     <li><a href="#controls">Controls</a></li>
@@ -33,9 +33,11 @@ Notes:
 
 <span id="howToRun"></span>
 
-## How to (install and) run
+## How to install and run
 
-*Note: You should have a stable internet connection to use the installer and YouTube playlist player. Also, the installer only works on **Ubuntu**, **Arch** and **Solus** based systems*
+*Note: You should have a stable internet connection to use the installer and YouTube playlist player. Also, the installer only works on **Ubuntu** and **Arch** based distros.*
+
+*Note: The executable inside the `sh` folder might be outdated (I might forget to move new executable to sh folder)! If you experience problems with it, compile the source code to generate a new executable.*
 
 Clone or download the files and make sure the installer.sh file is executable with:<br>
 `chmod +x installer.sh`<br>
@@ -48,28 +50,27 @@ Run the installer.sh file (Ubuntu, Arch & Solus based distros only) and you're r
 4. Install MPV and Python 3
 5. Install YouTube-dlc with `youtube-dlc --version || ( sudo wget https://github.com/blackjack4494/yt-dlc/releases/latest/download/youtube-dlc -O $HOME/bin/youtube-dlc && sudo chmod a+rx $HOME/bin/youtube-dlc )`
 6. Add $HOME/bin to PATH (if not there already). (Put code inside .bashrc to avoid having to do it on every boot)
-7. Reboot (optional)
+7. Reboot
 
 <span id="howToUpdate"></span>
 
 ## How to update
 
-If the application has a new version, you can redownload the source code and run the installer.sh file. It will update whatever should be updated, or just download and move the "bgmplayer" file to the $HOME/bin folder.
+If the application has a new version, just download it and put the executable isnide your `$HOME/bin` directory.
 
 <span id="compilingTheCode"></span>
 
 ## Compiling the code
 
-If you want to compile the source code yourself, you'll need the dependencies and g++.
-To compile: <code>make</code>
+If you want to compile the source code yourself, you'll need the dependencies and g++. You can either compile by executing `compile.sh` or `install.sh` (`install.sh` will also install application and *most* dependencies) in the `sh/` directory, or by doing the following: `cmake . && make`
+
+**NOTE:** `compile.sh` will generate the new executable and also save it inside the `sh` folder.
 
 <span id="dependencies"></span>
 
 ### Dependencies
 
 <ul>
-<!-- Why did it need python2? -->
-<!-- <li><a href="https://www.python.org/download/releases/2.0/" target="_blank">Python 2</a> <small>(sudo apt-get install python)</small></li> -->
 <li><a href="https://cmake.org/" target="_blank">CMake</a></li>
 <li>The <b>latest</b> version of <a href="https://mpv.io/installation/" target="_blank">mpv</a> (Debian-based users will have to add a repository and install the latest version: add-apt-repository ppa:mc3man/mpv-tests -y)</li>
 <!-- less - because I don't know how to replicate it with C++ yet -->
