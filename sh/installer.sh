@@ -26,7 +26,7 @@ pacman --version && MANAGER="pacman"
 
 echo "Installing dependencies. (will need sudo permissions)"
 if [[ $MANAGER == "pacman" ]]; then
-   sudo pacman -S mpv python less --noconfirm
+   sudo pacman -S mpv python less --noconfirm --needed
 elif [[ $MANAGER == "apt" ]]; then # idk what cmake is on ubuntu yet, so I can't add it to installation yet
    sudo add-apt-repository ppa:mc3man/mpv-tests -y && sudo apt update && sudo apt-get remove mpv -y && sudo apt install mpv python less -y
 else
