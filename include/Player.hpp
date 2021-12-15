@@ -8,7 +8,7 @@
 class Player
 {
 private:
-    std::string fileName;
+    std::string fileName, scriptOpts;
     enum ModType
     {
         NAME,

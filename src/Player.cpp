@@ -15,6 +15,7 @@
 Player::Player(std::string fileName)
 {
     this->fileName = fileName;
+    this->scriptOpts = "--script-opts=ytdl_hook-ytdl_path=/usr/local/bin/yt-dlp";
 
     // the below will setup everything if you don't have the playlists file in ~/.ytbgmpcli/
     setup();
@@ -171,7 +172,7 @@ void Player::instantPlayPlaylists(std::vector<int> playlistsToPlay, std::map<std
     }
 
     // basic mpv command: mpv playlist --no-video youtube-dl-location
-    command = "mpv " + playlistsCommand + " --no-video --script-opts=ytdl_hook-ytdl_path=$HOME/bin/youtube-dlc";
+    command = "mpv " + playlistsCommand + " --no-video " + this->scriptOpts;
     if (flags["shuffle"]) // if the user wants to shuffle
     {
         command += " --shuffle";
@@ -675,11 +676,11 @@ void Player::playPlaylists()
     // if they want to loop
     if (cmds::compareStrings("y", loop) || cmds::compareStrings("yes", loop))
     {
-        command = "mpv " + playlistsCommand + " --no-video --loop-playlist --script-opts=ytdl_hook-ytdl_path=$HOME/bin/youtube-dlc";
+        command = "mpv " + playlistsCommand + " --no-video --loop-playlist " + this->scriptOpts;
     } // do not delete else if
     else if (cmds::compareStrings("n", loop) || cmds::compareStrings("no", loop))
     {
-        command = "mpv " + playlistsCommand + " --no-video --script-opts=ytdl_hook-ytdl_path=$HOME/bin/youtube-dlc";
+        command = "mpv " + playlistsCommand + " --no-video " + this->scriptOpts;
     }
     else
     {

@@ -34,7 +34,7 @@ else
    exit 1
 fi
 
-youtube-dlc --version || ( sudo wget https://github.com/blackjack4494/yt-dlc/releases/latest/download/youtube-dlc -O $HOME/bin/youtube-dlc && sudo chmod a+rx $HOME/bin/youtube-dlc )
+yt-dlp --version || ( sudo wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /usr/local/bin/yt-dlp && sudo chmod a+rx /usr/local/bin/yt-dlp )
 
 echo "Adding $HOME/bin to PATH."
 echo -e '\nexport PATH="$HOME/bin:$PATH"' >> $HOME/.bashrc
