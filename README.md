@@ -48,7 +48,7 @@ Run the installer.sh file (Ubuntu, Arch & Solus based distros only) and you're r
 2. Make the executable (prebuilt, or manually compiled) runnable with `chmod +x bgmplayer`
 3. Move/Copy the file to your $HOME/bin directory (create it if it does not exist)
 4. Install MPV and Python 3
-5. Install YouTube-dlc with `youtube-dlc --version || ( sudo wget https://github.com/blackjack4494/yt-dlc/releases/latest/download/youtube-dlc -O $HOME/bin/youtube-dlc && sudo chmod a+rx $HOME/bin/youtube-dlc )`
+5. Install yt-dlp with `yt-dlp --version || ( sudo wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /usr/local/bin/yt-dlp && sudo chmod a+rx /usr/local/bin/yt-dlp )`
 6. Add $HOME/bin to PATH (if not there already). (Put code inside .bashrc to avoid having to do it on every boot)
 7. Reboot
 
@@ -56,7 +56,7 @@ Run the installer.sh file (Ubuntu, Arch & Solus based distros only) and you're r
 
 ## How to update
 
-If the application has a new version, just download it and put the executable isnide your `$HOME/bin` directory.
+If the application has a new version, just download it and put the executable inside your `$HOME/bin` directory.
 
 <span id="compilingTheCode"></span>
 
@@ -75,7 +75,7 @@ If you want to compile the source code yourself, you'll need the dependencies an
 <li>The <b>latest</b> version of <a href="https://mpv.io/installation/" target="_blank">mpv</a> (Debian-based users will have to add a repository and install the latest version: add-apt-repository ppa:mc3man/mpv-tests -y)</li>
 <!-- less - because I don't know how to replicate it with C++ yet -->
 <li><a href="https://globedrill.com/bash-less-command-not-found-install-less-command-on-centos-ubuntu/" target="_blank">less</a> <small>(sudo apt-get install less)</small></li>
-<li><a href="https://github.com/blackjack4494/yt-dlc" target="_blank">youtube-dlc</a></li>
+<li><a href="https://github.com/yt-dlp/yt-dlp" target="_blank">yt-dlp</a></li>
 </ul>
 
 <span id="controls"></span>
