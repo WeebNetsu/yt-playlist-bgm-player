@@ -6,6 +6,9 @@ if [[ $EUID -eq 0 ]]; then
    exit 1
 fi
 
+pushd "$(dirname "$0")"
+trap popd EXIT
+
 chmod +x ./compile.sh && ./compile.sh && COMPILE_SUCCESS=true
 
 if [[ $COMPILE_SUCCESS != true ]]; then
