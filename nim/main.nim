@@ -21,7 +21,7 @@ proc main() =
     echo "Welcome!"
 
     # if setup fails, we will not run the program
-    var running: bool = player.setup()
+    var running: bool = utils.setup()
 
     while running:
         if paramCount() == 0:
@@ -35,15 +35,16 @@ proc main() =
                 of 0:
                     running = false
                 of 1:
-                    echo "[TODO] Play Playlists"
+                    utils.showMessage("Play Playlist", "notice")
                 of 2:
+                    utils.showMessage("Add Playlist", "notice")
                     player.addPlaylist()
                 of 3:
-                    echo "[TODO] Edit Playlist"
+                    utils.showMessage("Edit Playlist", "notice")
                 of 4:
-                    echo "[TODO] Remove Playlist"
+                    utils.showMessage("Remove Playlist", "notice")
                 of 5:
-                    echo "[TODO] Help"
+                    utils.showMessage("Help", "notice")
                 else:
                     echo "Invalid Choice"
         except ValueError:

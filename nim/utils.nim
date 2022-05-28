@@ -1,4 +1,12 @@
 import strformat
+from os import getConfigDir, joinPath, existsOrCreateDir, fileExists
+
+const 
+    scriptOpts*: string = "--script-opts=ytdl_hook-ytdl_path=/usr/local/bin/yt-dlp"
+    saveFolderName*: string = "ytbgmpcli"
+    saveFileName*: string = "playlists.txt"
+
+let appSaveFile*: string = joinPath(getConfigDir(), saveFolderName, saveFileName)
 
 from terminal import setForegroundColor, resetAttributes, ForegroundColor
 
@@ -31,3 +39,24 @@ proc showMessage*(msg: string, msgType: string = "success") =
             echo msg
 
     stdout.resetAttributes() # reset terminal colors & stuff
+
+proc setup*(): bool =
+    let configDir = joinPath(getConfigDir(), saveFolderName)
+
+    try:
+        # check if dir exists, if not, create it
+        if not existsOrCreateDir(configDir):
+            echo "Config folder not found, creating it..."
+    except OSError:
+        echo &"Failed to create config directory {configDir}"
+        return false
+
+    try:
+        if not fileExists(appSaveFile):
+            echo "Save file not found, creating it..."
+            writeFile(appSaveFile, "")
+    except OSError:
+        echo &"Failed to create config file: {appSaveFile}"
+        return false
+
+    return true

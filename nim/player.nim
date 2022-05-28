@@ -1,45 +1,18 @@
-from os import getConfigDir, joinPath, existsOrCreateDir, fileExists
 import strformat
-import utils
 from strutils import strip, split, find
 
-const 
-    scriptOpts: string = "--script-opts=ytdl_hook-ytdl_path=/usr/local/bin/yt-dlp"
-    saveFolderName: string = "ytbgmpcli"
-    saveFileName: string = "playlists.txt"
+import utils
 
-let appSaveFile: string = joinPath(getConfigDir(), saveFolderName, saveFileName)
 
-proc setup*(): bool =
-    let configDir = joinPath(getConfigDir(), saveFolderName)
-
-    try:
-        # check if dir exists, if not, create it
-        if not existsOrCreateDir(configDir):
-            echo "Config folder not found, creating it..."
-    except OSError:
-        echo &"Failed to create config directory {configDir}"
-        return false
-
-    try:
-        if not fileExists(appSaveFile):
-            echo "Save file not found, creating it..."
-            writeFile(appSaveFile, "")
-    except OSError:
-        echo &"Failed to create config file: {appSaveFile}"
-        return false
-
-    return true
-
-proc checkPlaylistExists(playlistName: string): bool =
+proc checkPlaylistExists*(playlistName: string): bool =
     if find(playlistName, "`") != -1 or find(playlistName, "~") != -1:
         utils.showMessage("Invalid character found '~' or '`' in name", "warning")
         return true
     
     var playlistFile: File
 
-    if not open(playlistFile, appSaveFile): # check if file can be opened
-        utils.criticalError(&"Failed to open file: {appSaveFile}")
+    if not open(playlistFile, utils.appSaveFile): # check if file can be opened
+        utils.criticalError(&"Failed to open file: {utils.appSaveFile}")
 
     var 
         readingFile: bool = true
@@ -48,19 +21,20 @@ proc checkPlaylistExists(playlistName: string): bool =
     while readingFile:
         readingLine += 1
         try:
+            let lineRead = playlistFile.readLine().strip()
             # if online, then we use ~, if locally, then we use `
             # this is legacy code, might be changed in the future
             # to use "/" and "http" instead of "~" and "`", since
             # local playlists will always start with / and online with http(s)
-            var line: seq[string] = playlistFile.readLine().strip().split("~")
+            var line: seq[string] = lineRead.split("~")
 
             if line.len != 2:
                 # if the playlist is stored locally
-                line = playlistFile.readLine().strip().split("`")
+                line = lineRead.split("`")
 
                 if line.len != 2:
                     readingFile = false
-                    utils.criticalError(&"Invalid line ({readingLine}) in file: {appSaveFile}")
+                    utils.criticalError(&"Invalid line ({readingLine}) in file: {utils.appSaveFile}")
 
             let playlist: string = line[0]
 
@@ -73,7 +47,25 @@ proc checkPlaylistExists(playlistName: string): bool =
         except:
             readingFile = false
             close(playlistFile)
-            utils.criticalError(&"Failed to read file: {appSaveFile}")
+            utils.criticalError(&"Failed to read file: {utils.appSaveFile}")
+
+    close(playlistFile)
+    
+    return false
+
+proc checkPlaylistFileEmpty*(): bool =
+    var playlistFile: File
+    if not open(playlistFile, utils.appSaveFile): # check if file can be opened
+        utils.criticalError(&"Failed to open file: {utils.appSaveFile}")
+        
+    try:
+        discard playlistFile.readLine()
+    except EOFError:
+        # if we get end of file on first read, then the file is empty
+        close(playlistFile)
+        return true
+    except:
+        utils.criticalError(&"Failed to read file: {utils.appSaveFile}")
 
     close(playlistFile)
     
@@ -116,7 +108,7 @@ proc addPlaylist*() =
         return
 
     try:
-        let saveFile = open(appSaveFile, fmAppend)
+        let saveFile = open(utils.appSaveFile, fmAppend)
 
         if localPlaylist:
             saveFile.write(&"\n{playlistName}`{playlistLocation}")
@@ -125,6 +117,13 @@ proc addPlaylist*() =
 
         saveFile.close()
     except IOError:
-        utils.showMessage(&"Failed to write to file: {appSaveFile}", "warning")
+        utils.showMessage(&"Failed to write to file: {utils.appSaveFile}", "warning")
     except:
-        utils.showMessage(&"Failed to open file: {appSaveFile}", "warning")
+        utils.showMessage(&"Failed to open file: {utils.appSaveFile}", "warning")
+
+proc updatePlaylist*() =
+    if checkPlaylistFileEmpty():
+        utils.showMessage("No playlists have been added, so there are no playlists to update...", "warning")
+        return
+
+    echo "Playlists you have:"
