@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "THIS IS NOT YET IMPLEMENTED FOR NIM! SCRIPT WILL NOT WORK"
+
 read -p 'Would you like to compile the source code? [y/n]: ' comp
 
 set -e # quits the script as soon as an error happens

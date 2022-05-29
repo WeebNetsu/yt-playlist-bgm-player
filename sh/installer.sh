@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "THIS IS NOT YET IMPLEMENTED FOR NIM! SCRIPT WILL NOT WORK CORRECTLY"
+
 # running as root will set the $HOME dir to /root/ and not /home/user/
 if [[ $EUID -eq 0 ]]; then
    echo "This script should not be run as root"
