@@ -1,6 +1,7 @@
 import strformat
 from os import getConfigDir, joinPath, existsOrCreateDir, fileExists
-from strutils import parseInt
+from strutils import parseInt, toLowerAscii, strip
+from terminal import setForegroundColor, resetAttributes, ForegroundColor
 
 const 
     scriptOpts*: string = "--script-opts=ytdl_hook-ytdl_path=/usr/local/bin/yt-dlp"
@@ -8,8 +9,6 @@ const
     saveFileName*: string = "playlists.txt"
 
 let appSaveFile*: string = joinPath(getConfigDir(), saveFolderName, saveFileName)
-
-from terminal import setForegroundColor, resetAttributes, ForegroundColor
 
 proc displayMenu*(menuOptions: openArray[string]) =
     echo "What would you like to do?"
@@ -85,7 +84,20 @@ proc getSelectableOption*(question: string, options: openArray[string], inputStr
     except:
         utils.criticalError(&"Unknown error while getting user input.")
 
+proc getYesNoAnswer*(question: string): bool =
+    stdout.write(question & " [y/n]: ")
+
+    let confirm: string = readLine(stdin).strip()
+
+    if confirm == "":
+        showMessage("Please answer with y or n.", "warning")
+        return getYesNoAnswer(question)
+
+    # true if user replied with yes or y
+    return (toLowerAscii(confirm) == "y") or (toLowerAscii(confirm) == "yes")
+
 proc displayHelp*() =
+    # https://git.sr.ht/~reesmichael1/nim-pager
     echo """
     This CLI application is intended to help you play music in the background from YouTube.
 

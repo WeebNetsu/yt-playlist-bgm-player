@@ -15,6 +15,9 @@ from os import paramCount
 
 import utils, player
 
+# if the user ctrl+c out of the application
+system.setControlCHook(proc() {.noconv.} = criticalError("Unexpected exit!"))
+
 proc main() =
     const menuOptions: array[5, string] = ["Play Playlists", "Add Playlist", "Edit Playlist", "Remove Playlist", "Help"]
 
@@ -32,6 +35,7 @@ proc main() =
                     running = false
                 of 1:
                     utils.showMessage("Play Playlist", "notice")
+                    player.playPlaylists()
                 of 2:
                     utils.showMessage("Add Playlist", "notice")
                     player.addPlaylist()

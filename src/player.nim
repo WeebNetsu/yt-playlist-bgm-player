@@ -1,6 +1,7 @@
 import strformat
-from strutils import strip, split, find, parseInt, toLowerAscii
+from strutils import strip, split, find, parseInt, toLowerAscii, replace
 from sequtils import map
+from os import execShellCmd, normalizedPath, joinPath
 
 import utils
 
@@ -190,7 +191,84 @@ proc updatePlaylistLink(playlistNumber: int) =
         utils.showMessage("--- Playlist Updated ---", "success")
     else:
         utils.showMessage("Playlist could not be updated", "warning")
+  
+proc displayPlayerControls() =
+    echo "\nPlayer Controls:"
+    echo "\t[SPACE] - Pause\t\t\tm - Mute"
+    echo "\t[Right Arrow] - Skip 10 Seconds\t[Left Arrow] - Rewind 10 Seconds"
+    echo "\t[Up Arrow] - Skip 1 Minute\t[Down Arrow] - Rewind 1 Minute"
+    echo "\t> - Next Song\t\t\t< - Previous Song"
+    echo "\tq - Quit"
     
+proc playPlaylists*() =
+    if(checkPlaylistFileEmpty()):
+        utils.showMessage("No playlists have been added, playlist file is empty.", "warning")
+        return
+
+    let playlists: seq[tuple[name: string, location: string, local: bool]] = getPlaylists();
+    let playlistNames: seq[string] = map(playlists, proc(val: tuple[name: string, location: string, local: bool]): string = $val.name)
+
+    for index, playlistName in playlistNames:
+        echo &"{index + 1}. {playlistName}"
+
+    echo "0. Cancel"
+
+    stdout.write("(Playlists to play [separated by spaces]) > ")
+
+    let chosenPlaylists: seq[string] = readLine(stdin).strip().split(" ")
+    var cleanedChosenPlaylists: seq[int] = @[]
+
+    if len(chosenPlaylists) < 1:
+        echo "Please enter at least 1 number"
+        playPlaylists()
+        return
+
+    for index, choice in chosenPlaylists:
+        if choice == "0":
+            utils.showMessage("--- Operation Canceled ---", "notice")
+            return
+
+        try:
+            if parseInt(choice) < 1:
+                utils.showMessage("Invalid option detected. Please only enter valid numbers.", "warning")
+                playPlaylists()
+                return
+
+            cleanedChosenPlaylists.add(parseInt(choice) - 1)
+        except ValueError:
+            utils.showMessage("Invalid option detected. Please only enter numbers.", "warning")
+            playPlaylists()
+            return
+
+    var command = "mpv"
+
+    for index, playlist in playlists:
+        if cleanedChosenPlaylists.find(index) < 0:
+            continue
+
+        # if a local playlist
+        if os.isAbsolute(playlist.location):
+            command &= " " & normalizedPath(playlist.location).replace(" ", "\\ ").joinPath("*")
+        else:
+            command &= " " & playlist.location
+
+    command &= &" --no-video {utils.scriptOpts}"
+
+    if utils.getYesNoAnswer("Would you like to shuffle the playlists?"):
+        command &= " --shuffle"
+
+    if utils.getYesNoAnswer("Loop playlists?"):
+        command &= " --loop-playlist"
+    
+    displayPlayerControls()
+
+    # todo this command (mpv) will only work on Linux (and maybe Mac)
+    if execShellCmd(command) != 0:
+        # this will save the program, in the future we can consider
+        # not stopping it from running and allow the user to choose
+        # a playlist again
+        utils.criticalError("Error while trying to run MPV command")
+
 proc addPlaylist*() =
     stdout.write("Please enter a name for the new playlist(type cancel to cancel): ")
 
@@ -206,7 +284,7 @@ proc addPlaylist*() =
 
     utils.showMessage("NOTE: If you're adding a local playlist, this is how your location should look: /home/netsu/my music", "notice")
     # todo this is not windows safe, will only work on linux
-    utils.showMessage("NOTE: Please do not add any '\\', '\"' or '\'' to the location and start from the root directory if on Linux", "notice")
+    utils.showMessage("NOTE: Please do not add any '\\', '*', '~', '`', '\"' or '\'' to the location and start from the root directory if on Linux", "notice")
 
     stdout.write("Please enter the location of the folder or the link to the playlist (cancel to cancel): ")
 
@@ -222,6 +300,7 @@ proc addPlaylist*() =
 
     let localPlaylist: bool = playlistLocation[0] == '/'
     
+    # I think we limit it because of MPV, couldn't remember
     if localPlaylist and (len(playlistLocation) > 60):
         utils.showMessage("Path to playlist is too long. Try moving it to a folder closer to root (/)", "warning")
         addPlaylist()
@@ -295,14 +374,9 @@ proc removePlaylist*() =
         utils.showMessage("--- Operation Canceled ---", "notice")
         return
 
-    stdout.write("Are you sure you want to delete playlist \"" & playlistNames[chosenPlaylist-1] & "\" forever? [y/n]: ")
-
-    let confirmDelete: string = readLine(stdin)
-
-    if not (toLowerAscii(confirmDelete) == "y" or toLowerAscii(confirmDelete) == "yes"):
+    if not utils.getYesNoAnswer(&"Are you sure you want to delete playlist \"{playlistNames[chosenPlaylist-1]}\" forever?"):
         utils.showMessage("Playlist NOT deleted", "notice")
         return
     
     if rewritePlaylistsFile(chosenPlaylist-1, ModType.DELETE):
         utils.showMessage("Playlist deleted", "notice")
-
