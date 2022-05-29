@@ -1,5 +1,5 @@
 import strformat
-from strutils import strip, split, find, parseInt
+from strutils import strip, split, find, parseInt, toLowerAscii
 from sequtils import map
 
 import utils
@@ -67,21 +67,14 @@ proc checkPlaylistExists(playlistName: string): bool =
     return false
 
 proc checkPlaylistFileEmpty(): bool =
-    var playlistFile: File
-    if not open(playlistFile, utils.appSaveFile): # check if file can be opened
-        utils.criticalError(&"Failed to open file: {utils.appSaveFile}")
-        
     try:
-        discard playlistFile.readLine()
-    except EOFError:
-        # if we get end of file on first read, then the file is empty
-        close(playlistFile)
-        return true
+        let playlistFile: string = readFile(utils.appSaveFile)
+
+        if len(playlistFile.strip()) < 3:
+            return true
     except:
         utils.criticalError(&"Failed to read file: {utils.appSaveFile}")
 
-    close(playlistFile)
-    
     return false
 
 proc getPlaylists(): seq[tuple[name: string, location: string, local: bool]] =
@@ -204,7 +197,7 @@ proc addPlaylist*() =
     let playlistName: string = readLine(stdin)
 
     if playlistName == "cancel":
-        echo "--- Operation Canceled ---"
+        utils.showMessage("--- Operation Canceled ---", "notice")
         return
 
     if checkPlaylistExists(playlistName):
@@ -224,7 +217,7 @@ proc addPlaylist*() =
         return
 
     if playlistLocation == "cancel":
-        echo "--- Operation Canceled ---"
+        utils.showMessage("--- Operation Canceled ---", "notice")
         return
 
     let localPlaylist: bool = playlistLocation[0] == '/'
@@ -263,11 +256,6 @@ proc updatePlaylist*() =
     if chosenPlaylist == 0:
         return
 
-    if (chosenPlaylist > len(playlists)):
-        utils.showMessage("Could not find playlist... Does it exist?", "warning")
-        updatePlaylist()
-        return
-
     let chosenOption: int = utils.getSelectableOption("What would you like to modify?", playlistModifyOptions, "(What to edit) > ")
 
     case chosenOption:
@@ -291,3 +279,30 @@ proc updatePlaylist*() =
             utils.showMessage("Invalid option", "warning")
             updatePlaylist()
             return
+
+proc removePlaylist*() =
+    if checkPlaylistFileEmpty():
+        utils.showMessage("No playlists have been added, so there are no playlists to remove...", "notice")
+        return
+
+    let playlists: seq[tuple[name: string, location: string, local: bool]] = getPlaylists()
+
+    let playlistNames: seq[string] = map(playlists, proc(val: tuple[name: string, location: string, local: bool]): string = $val.name)
+
+    let chosenPlaylist: int = utils.getSelectableOption("Choose a playlist:", playlistNames, "(Playlist to delete) > ")
+
+    if chosenPlaylist == 0:
+        utils.showMessage("--- Operation Canceled ---", "notice")
+        return
+
+    stdout.write("Are you sure you want to delete playlist \"" & playlistNames[chosenPlaylist-1] & "\" forever? [y/n]: ")
+
+    let confirmDelete: string = readLine(stdin)
+
+    if not (toLowerAscii(confirmDelete) == "y" or toLowerAscii(confirmDelete) == "yes"):
+        utils.showMessage("Playlist NOT deleted", "notice")
+        return
+    
+    if rewritePlaylistsFile(chosenPlaylist-1, ModType.DELETE):
+        utils.showMessage("Playlist deleted", "notice")
+

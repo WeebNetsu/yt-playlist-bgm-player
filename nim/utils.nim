@@ -74,6 +74,10 @@ proc getSelectableOption*(question: string, options: openArray[string], inputStr
     try:
         let chosenOption: int = readLine(stdin).parseInt()
 
+        if chosenOption > len(options):
+            showMessage("Invalid option... Does it exist?", "warning")
+            return getSelectableOption(question, options, inputStr)
+
         return chosenOption
     except ValueError:
         echo "Invalid choice"

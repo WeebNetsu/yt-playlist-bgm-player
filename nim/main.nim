@@ -40,6 +40,7 @@ proc main() =
                     player.updatePlaylist()
                 of 4:
                     utils.showMessage("Remove Playlist", "notice")
+                    player.removePlaylist()
                 of 5:
                     utils.displayHelp()
                 else:
