@@ -12,24 +12,20 @@ proc main(foo=1,bar=2.0,baz="hi",verb=false,paths: seq[string]):int=
 dispatch(main) ]#
 
 from os import paramCount
-from strutils import parseInt
+
 import utils, player
 
 proc main() =
     const menuOptions: array[5, string] = ["Play Playlists", "Add Playlist", "Edit Playlist", "Remove Playlist", "Help"]
 
-    echo "Welcome!"
+    utils.showMessage("Welcome!", "success")
 
     # if setup fails, we will not run the program
     var running: bool = utils.setup()
 
     while running:
         if paramCount() == 0:
-            utils.displayMenu(menuOptions)
-
-        try:
-            stdout.write("> ")
-            let choice: int = readLine(stdin).parseInt()
+            let choice = utils.getSelectableOption("", menuOptions)
 
             case choice:
                 of 0:
@@ -41,19 +37,17 @@ proc main() =
                     player.addPlaylist()
                 of 3:
                     utils.showMessage("Edit Playlist", "notice")
+                    player.updatePlaylist()
                 of 4:
                     utils.showMessage("Remove Playlist", "notice")
                 of 5:
                     utils.showMessage("Help", "notice")
                 else:
+                    # user should never get to this point
                     echo "Invalid Choice"
-        except ValueError:
-            echo "Invalid choice"
-            continue
-        except:
-            echo "Unknown error"
-            system.quit()
+        else:
+            running = false
 
-    echo "Goodbye!"
+    utils.showMessage("Goodbye!", "notice")
 
 main()

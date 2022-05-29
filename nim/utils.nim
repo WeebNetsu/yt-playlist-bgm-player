@@ -1,5 +1,6 @@
 import strformat
 from os import getConfigDir, joinPath, existsOrCreateDir, fileExists
+from strutils import parseInt
 
 const 
     scriptOpts*: string = "--script-opts=ytdl_hook-ytdl_path=/usr/local/bin/yt-dlp"
@@ -60,3 +61,22 @@ proc setup*(): bool =
         return false
 
     return true
+
+proc getSelectableOption*(question: string, options: openArray[string], inputStr: string = "> "): int =
+    echo question
+
+    for index, option in options:
+        echo &"{index + 1}. {option}"
+
+    echo "0. Cancel"
+    stdout.write(inputStr)
+
+    try:
+        let chosenOption: int = readLine(stdin).parseInt()
+
+        return chosenOption
+    except ValueError:
+        echo "Invalid choice"
+        return getSelectableOption(question, options, inputStr)
+    except:
+        utils.criticalError(&"Unknown error while getting user input.")
