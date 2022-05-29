@@ -179,8 +179,25 @@ proc updatePlaylistName(playlistNumber: int) =
         utils.showMessage("--- Playlist Updated ---", "success")
     else:
         utils.showMessage("Playlist could not be updated", "warning")
-    
 
+proc updatePlaylistLink(playlistNumber: int) =
+    stdout.write("New link/location for playlist (cancel to cancel): ")
+    let newLocation: string = readLine(stdin).strip()
+
+    if newLocation == "cancel":
+        utils.showMessage("--- Operation Canceled ---", "notice")
+        return
+
+    if newLocation == "":
+        utils.showMessage("Invalid link/location provided", "warning")
+        updatePlaylistLink(playlistNumber)
+        return
+
+    if rewritePlaylistsFile(playlistNumber, ModType.LINK, newLocation):
+        utils.showMessage("--- Playlist Updated ---", "success")
+    else:
+        utils.showMessage("Playlist could not be updated", "warning")
+    
 proc addPlaylist*() =
     stdout.write("Please enter a name for the new playlist(type cancel to cancel): ")
 
@@ -261,16 +278,16 @@ proc updatePlaylist*() =
             # -1 since we use 0 as cancel and indexes start at 0
             updatePlaylistName(chosenPlaylist-1)
         of 2:
-            utils.showMessage("Update Link", "notice")
-            # updatePlaylistLink(chosenPlaylist);
+            updatePlaylistLink(chosenPlaylist-1);
         of 3:
             # change playlist status from online -> local and vice versa
-            # rewriteFile(rewritePlaylists(chosenPlaylist, LOCAL, ""));
-            utils.showMessage("Update type", "notice")
+            if rewritePlaylistsFile(chosenPlaylist-1, ModType.LOCAL):
+                utils.showMessage("--- Playlist Updated ---", "success")
+            else:
+                utils.showMessage("Playlist could not be updated", "warning")
         else:
             # user should never end up here, but if they somehow do
             # just start over
             utils.showMessage("Invalid option", "warning")
             updatePlaylist()
             return
-
