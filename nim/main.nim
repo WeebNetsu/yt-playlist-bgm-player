@@ -41,7 +41,7 @@ proc main() =
                 of 4:
                     utils.showMessage("Remove Playlist", "notice")
                 of 5:
-                    utils.showMessage("Help", "notice")
+                    utils.displayHelp()
                 else:
                     # user should never get to this point
                     echo "Invalid Choice"

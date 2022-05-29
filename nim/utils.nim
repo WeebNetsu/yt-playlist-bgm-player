@@ -80,3 +80,40 @@ proc getSelectableOption*(question: string, options: openArray[string], inputStr
         return getSelectableOption(question, options, inputStr)
     except:
         utils.criticalError(&"Unknown error while getting user input.")
+
+proc displayHelp*() =
+    echo """
+    This CLI application is intended to help you play music in the background from YouTube.
+
+    Now, let's look at the menu and talk about it:
+    
+    Play Playlist: This option will read from the playlists saved inside
+    'custom-playlists.txt' and display the options to you. You can play one or more
+    playlists (separated by spaces) from here.
+    
+    Add Playlist (online): If you want to add a new playlist to your list You can
+    insert a playlist name which should NOT contain any '~' or '`'. Then you can
+    insert a playlist link copied from YouTube. The playlist should be added to the
+    file with no problem.
+    
+    Remove Playlist: If there is a playlist you don't like using, just remove it
+    from the list. If you want to listen to it after deleting it, you'll have to add
+    it again.
+    
+    Edit Playlist: Did you perhaps insert the wrong name or link for your playlist?
+    Or did the link change? This option will allow you to edit the playlist name and
+    link.
+    
+    Flags: There are 3 types of flags you can add when running bgmplayer,
+    single-answer flags (--), multi-answer flags (-) and the playlist flag (playlist
+    number). These flags can be used to play playlists without loading the rest of
+    the interface. You can add the playlist number to the end of the command
+    (eg. bgmplayer 1) and it will instantly play and shuffle the playlist. You can
+    use -no-shuffle to not shuffle the playlist (so: bgmplayer 1 -no-shuffle). So
+    far we've talked abut multi-answer flags, flags where you can add multiple
+    flags. Single-answer flags are different in the sense that they use 2 '--'
+    instead of 1 '-' and that there can only be 1 flag if it's a single-answer flag
+    (eg. bgmplayer --help). You can find out more about flags in the Github page.
+    """
+
+    showMessage("\nSome problems may still occur and if it does, edit the code yourself if you have\nthe source code or remove the problem from the 'custom-playlists.txt' file (if\nthe problem is from the playlists file), or create an issue on Github:\n\thttps://github.com/WeebNetsu/yt-playlist-bgm-player", "notice")
