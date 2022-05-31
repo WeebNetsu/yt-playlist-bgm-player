@@ -78,7 +78,7 @@ proc checkPlaylistFileEmpty(): bool =
 
     return false
 
-proc getPlaylists(): seq[tuple[name: string, location: string, local: bool]] =
+proc getPlaylists*(): seq[tuple[name: string, location: string, local: bool]] =
     result = @[]
     var playlistFile: File
 
@@ -199,6 +199,39 @@ proc displayPlayerControls() =
     echo "\t[Up Arrow] - Skip 1 Minute\t[Down Arrow] - Rewind 1 Minute"
     echo "\t> - Next Song\t\t\t< - Previous Song"
     echo "\tq - Quit"
+   
+# if the user wants to play playlists without opening the interface
+proc instantPlayPlaylists*(playlistsToPlay: openArray[int], shuffle: bool = false, loop: bool = false) =
+    if(checkPlaylistFileEmpty()):
+        utils.showMessage("No playlists have been added, playlist file is empty.", "warning")
+        return
+
+    let playlists: seq[tuple[name: string, location: string, local: bool]] = getPlaylists();
+
+    var command = "mpv"
+
+    for index, playlist in playlists:
+        if playlistsToPlay.find(index) < 0:
+            continue
+
+        command &= " " & utils.cleanFilePath(playlist.location)
+
+    command &= &" --no-video {utils.scriptOpts}"
+
+    if shuffle:
+        command &= " --shuffle"
+
+    if loop:
+        command &= " --loop-playlist"
+    
+    displayPlayerControls()
+
+    # todo this command (mpv) will only work on Linux (and maybe Mac)
+    if execShellCmd(command) != 0:
+        # this will save the program, in the future we can consider
+        # not stopping it from running and allow the user to choose
+        # a playlist again
+        utils.criticalError("Error while trying to run MPV command")
     
 proc playPlaylists*() =
     if(checkPlaylistFileEmpty()):
@@ -246,11 +279,7 @@ proc playPlaylists*() =
         if cleanedChosenPlaylists.find(index) < 0:
             continue
 
-        # if a local playlist
-        if os.isAbsolute(playlist.location):
-            command &= " " & normalizedPath(playlist.location).replace(" ", "\\ ").joinPath("*")
-        else:
-            command &= " " & playlist.location
+        command &= " " & utils.cleanFilePath(playlist.location)
 
     command &= &" --no-video {utils.scriptOpts}"
 

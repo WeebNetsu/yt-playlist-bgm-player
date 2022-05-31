@@ -1,6 +1,6 @@
 import strformat
-from os import getConfigDir, joinPath, existsOrCreateDir, fileExists
-from strutils import parseInt, toLowerAscii, strip
+from os import getConfigDir, joinPath, existsOrCreateDir, fileExists, normalizedPath
+from strutils import parseInt, toLowerAscii, strip, replace
 from terminal import setForegroundColor, resetAttributes, ForegroundColor
 
 const 
@@ -17,6 +17,13 @@ proc displayMenu*(menuOptions: openArray[string]) =
         echo &"{index + 1}. {option}"
 
     echo "0. Exit"
+
+proc cleanFilePath*(path: string): string = 
+    # if a local playlist
+    if os.isAbsolute(path):
+        return normalizedPath(path).replace(" ", "\\ ").joinPath("*")
+
+    return path
 
 proc criticalError*(errorMessage: string) =
     # todo display message in red

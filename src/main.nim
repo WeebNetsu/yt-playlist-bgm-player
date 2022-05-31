@@ -1,27 +1,16 @@
-#[ import cligen
 from os import paramCount
-
-proc main(foo=1,bar=2.0,baz="hi",verb=false,paths: seq[string]):int=
-    var running: bool = false
-    let menuOptions: array[5, string] = ["Play Playlists", "Add Playlist", "Edit Playlist", "Remove Playlist", "Help"]
-
-    echo paramCount()
-
-    echo paths
-
-dispatch(main) ]#
-
-from os import paramCount
+import cligen, strformat
+from sequtils import map
 
 import utils, player
 
 # if the user ctrl+c out of the application
 system.setControlCHook(proc() {.noconv.} = criticalError("Unexpected exit!"))
 
-proc main() =
+proc main(playlists: seq[int], list=false, random=false, noShuffle=false, noLoop=false) =
     const menuOptions: array[5, string] = ["Play Playlists", "Add Playlist", "Edit Playlist", "Remove Playlist", "Help"]
 
-    utils.showMessage("Welcome!", "success")
+    utils.showMessage("Welcome!\n", "success")
 
     # if setup fails, we will not run the program
     var running: bool = utils.setup()
@@ -51,8 +40,29 @@ proc main() =
                     # user should never get to this point
                     echo "Invalid Choice"
         else:
+            if list:
+                echo "Available Playlists:"
+                for index, item in player.getPlaylists():
+                    echo &"{index+1}. {item.name}"
+
+                # list cannot be used with other flags
+                break
+
+            if len(playlists) > 0:
+                if playlists.find(0) >= 0:
+                    utils.showMessage("0 is not a valid playlist number", "warning")
+                    break
+
+                player.instantPlayPlaylists(map(playlists, proc(val: int): int = val - 1), not noShuffle, not noLoop)
+
             running = false
 
-    utils.showMessage("Goodbye!", "notice")
+    utils.showMessage("\nGoodbye!", "notice")
 
-main()
+dispatch(main, help={
+    "playlists": "Selected playlist(s) to play",
+    "list": "Return list of available playlists",
+    "random": "Play all your playlists in random order",
+    "no-shuffle": "Disables playlist shuffling",
+    "no-loop": "Disables playlist looping",
+})
