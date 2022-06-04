@@ -7,6 +7,7 @@ Notes:
 <ul>
     <!-- it may have Mac support, but I don't have a Mac to test it on -->
     <li>This currently only tested on Linux (it probably works on Mac), I'm planning to give it support for other OSs in the future.</li>
+    <li>Looking for the C++ version? <a href="https://github.com/WeebNetsu/yt-playlist-bgm-player/tree/cpp" target="_blank">Click here</a>. Take note that it is no longer being developed.</li>
 </ul>
 
 ## Content
