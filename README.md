@@ -1,11 +1,12 @@
 # YouTube Playlist BGM Player
 
-This is a basic background music player made with C++ to play YouTube Playlists in the background. It is focused on being very light weight and easily accessable, even if you don't have a Desktop Enviroment or Window Manager.
+This is a basic background music player made with Nim to play YouTube Playlists in the background. It is focused on being very light weight and easily accessable, even if you don't have a Desktop Enviroment or Window Manager.
 
-Notes: 
+Notes:
+
 <ul>
     <!-- it may have Mac support, but I don't have a Mac to test it on -->
-    <li>This currently only tested on Linux (and probably works on Mac), I'm planning to give it support for other OSs in the future.</li>
+    <li>This currently only tested on Linux (it probably works on Mac), I'm planning to give it support for other OSs in the future.</li>
 </ul>
 
 ## Content
@@ -24,27 +25,23 @@ Notes:
         <li><a href="#shufflingPlaylists">Shuffling Playlists</a></li>
     </ul>
     <li><a href="#flags">Flags</a></li>
-    <ul>
-        <li><a href="#thePlaylistFlag">The Playlist Flag</a></li>
-        <li><a href="#singleAnswerFlags">Single-Answer Flags</a></li>
-        <li><a href="#multiAnswerFlags">Multi-Answer Flags</a></li>
-    </ul>
 </ul>
 
 <span id="howToRun"></span>
 
 ## How to install and run
 
-*Note: You should have a stable internet connection to use the installer and YouTube playlist player. Also, the installer only works on **Ubuntu** and **Arch** based distros.*
+_Note: You should have a stable internet connection to use the installer and YouTube playlist player. Also, the installer only works on **Ubuntu** and **Arch** based distros._
 
-*Note: The executable inside the `sh` folder might be outdated (I might forget to move new executable to sh folder)! If you experience problems with it, compile the source code to generate a new executable.*
+_Note: The executable inside the `sh` folder might be outdated (I might forget to move new executable to sh folder)! If you experience problems with it, compile the source code to generate a new executable._
 
 Clone or download the files and make sure the installer.sh file is executable with:<br>
 `chmod +x installer.sh`<br>
-Run the installer.sh file (Ubuntu, Arch & Solus based distros only) and you're ready to run the application! To run the application, execute the following command in your terminal:<br>`bgmplayer`<br>
-**If you don't have an Ubuntu, Arch or Solus based Linux distro**, you can compile the code (or use the prebuilt "bgmplayer" file) and just mimic everything happening in the installer.sh, but modified for your system. The steps are simple:
+Run the installer.sh file (Ubuntu and Arch based distros only) and you're ready to run the application! To run the application, execute the following command in your terminal:<br>`bgmplayer`<br>
+**If you don't have an Ubuntu or Arch based Linux distro**, you can compile the code (or use the prebuilt "bgmplayer" file) and just mimic everything happening in the installer.sh, but modified for your system. The steps are simple:
+
 1. Compile the code into an executable (optional)
-1.5. If you compiled it yourself, rename the executable to "bgmplayer"
+   1.5. If you compiled it yourself, rename the executable to "bgmplayer"
 2. Make the executable (prebuilt, or manually compiled) runnable with `chmod +x bgmplayer`
 3. Move/Copy the file to your $HOME/bin directory (create it if it does not exist)
 4. Install MPV and Python 3
@@ -62,7 +59,7 @@ If the application has a new version, just download it and put the executable in
 
 ## Compiling the code
 
-If you want to compile the source code yourself, you'll need the dependencies and g++. You can either compile by executing `compile.sh` or `install.sh` (`install.sh` will also install application and *most* dependencies) in the `sh/` directory, or by doing the following: `cmake . && make`
+If you want to compile the source code yourself, you'll need the dependencies. You can either compile by executing `compile.sh` or `install.sh` (`install.sh` will also install application and dependencies) in the `sh/` directory, or by doing the following inside the `src/` directory: `nim c main.nim`
 
 **NOTE:** `compile.sh` will generate the new executable and also save it inside the `sh` folder.
 
@@ -71,10 +68,10 @@ If you want to compile the source code yourself, you'll need the dependencies an
 ### Dependencies
 
 <ul>
-<li><a href="https://cmake.org/" target="_blank">CMake</a></li>
-<li>The <b>latest</b> version of <a href="https://mpv.io/installation/" target="_blank">mpv</a> (Debian-based users will have to add a repository and install the latest version: add-apt-repository ppa:mc3man/mpv-tests -y)</li>
+<li><a href="https://nim-lang.org" target="_blank">Nim</a> <small>(only if compiling from source)</small></li>
+<li><a href="https://github.com/nim-lang/nimble" target="_blank">Nimble</a> <small>(only if compiling from source)</small></li>
+<li>The <b>latest</b> version of <a href="https://mpv.io/installation/" target="_blank">mpv</a> (Debian/Ubuntu-based users will have to add a repository and install the latest version: add-apt-repository ppa:mc3man/mpv-tests -y)</li>
 <!-- less - because I don't know how to replicate it with C++ yet -->
-<li><a href="https://globedrill.com/bash-less-command-not-found-install-less-command-on-centos-ubuntu/" target="_blank">less</a> <small>(sudo apt-get install less)</small></li>
 <li><a href="https://github.com/yt-dlp/yt-dlp" target="_blank">yt-dlp</a></li>
 </ul>
 
@@ -171,54 +168,37 @@ If you don't want to use the interface, you can use flags to do some of the thin
 
 This flag is used to run a playlist without opening the interface, this can be done by running bgmplayer with the playlist number afterwards. This should always be added when using multi-answer flags.<br>Example of the playlist flag: <code>bgmplayer 2</code> (will play playlist nr. 2)<br>Another example of the playlist flag: <code>bgmplayer 1 2</code> (will play playlist nr. 1 & 2)
 
-<span id="singleAnswerFlags"></span>
-
-### Single-answer flags
-
-Single-answer flags are flags that does not allow other flags to be added, as an example, the "--help" flag is single-answer and does not allow any other flags to be added before or after it. These flags does 1 thing that does not include working with playlists.
-Example of a single answer flag: <code>bgmplayer --help</code>
-
-#### All single-answer flags
+### All other flags
 
 <table>
     <tr>
         <th>Flag</th>
+        <th>Short</th>
         <th>Action</th>
     </tr>
     <tr>
         <td>--help</td>
+          <td>-h</td>
         <td>Displays help</td>
     </tr>
     <tr>
         <td>--list</td>
+          <td>-l</td>
         <td>Displays all playlists</td>
     </tr>
     <tr>
         <td>--random</td>
+          <td>-r</td>
         <td>Play all your playlists in random order</td>
     </tr>
-</table>
-
-<span id="multiAnswerFlags"></span>
-
-### Multi-answer flags
-
-Multi-answer flags are flags that can have multiple flags before or after it, such as the -no-shuffle flag. By default, the playlist you choose shuffles and if you don't want it to shuffle you can use this flag remove the shuffle.
-Example of a multi-answer flag: <code>bgmplayer 1 -no-shuffle -some-other-flags</code>
-
-#### All multi-answer flags
-
-<table>
     <tr>
-        <th>Flag</th>
-        <th>Action</th>
-    </tr>
-    <tr>
-        <td>-no-shuffle</td>
+        <td>--no-shuffle</td>
+        <td>-n</td>
         <td>Disables playlist shuffling</td>
     </tr>
     <tr>
-        <td>-no-loop</td>
+        <td>--no-loop</td>
+        <td>N/A</td>
         <td>Disables playlist looping</td>
     </tr>
 </table>

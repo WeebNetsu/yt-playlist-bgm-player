@@ -1,5 +1,6 @@
 main
 
+.idea/
 .vscode/
 build/
 ignore/
