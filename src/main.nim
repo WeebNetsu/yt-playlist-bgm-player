@@ -1,11 +1,14 @@
 from os import paramCount
 import cligen, strformat
 from sequtils import map
+from random import randomize
 
 import utils, player
 
 # if the user ctrl+c out of the application
 system.setControlCHook(proc() {.noconv.} = criticalError("Unexpected exit!"))
+
+randomize()
 
 proc main(playlists: seq[int], list=false, random=false, noShuffle=false, noLoop=false) =
     const menuOptions: array[5, string] = ["Play Playlists", "Add Playlist", "Edit Playlist", "Remove Playlist", "Help"]
@@ -47,6 +50,14 @@ proc main(playlists: seq[int], list=false, random=false, noShuffle=false, noLoop
 
                 # list cannot be used with other flags
                 break
+
+            if random:
+                if len(playlists) > 0:
+                    if playlists.find(0) >= 0:
+                        utils.showMessage("0 is not a valid playlist number", "warning")
+                        break
+
+                player.instantPlayPlaylists([], true, true, true)
 
             if len(playlists) > 0:
                 if playlists.find(0) >= 0:

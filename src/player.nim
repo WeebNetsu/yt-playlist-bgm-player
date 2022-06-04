@@ -2,6 +2,7 @@ import strformat
 from strutils import strip, split, find, parseInt, toLowerAscii, replace
 from sequtils import map
 from os import execShellCmd, normalizedPath, joinPath
+from random import shuffle
 
 import utils
 
@@ -201,27 +202,30 @@ proc displayPlayerControls() =
     echo "\tq - Quit"
    
 # if the user wants to play playlists without opening the interface
-proc instantPlayPlaylists*(playlistsToPlay: openArray[int], shuffle: bool = false, loop: bool = false) =
+proc instantPlayPlaylists*(playlistsToPlay: openArray[int], shuffle: bool = false, loop: bool = false, random: bool = false) =
     if(checkPlaylistFileEmpty()):
         utils.showMessage("No playlists have been added, playlist file is empty.", "warning")
         return
 
-    let playlists: seq[tuple[name: string, location: string, local: bool]] = getPlaylists();
+    var playlists: seq[tuple[name: string, location: string, local: bool]] = getPlaylists();
+
+    if random:
+      shuffle(playlists)
 
     var command = "mpv"
 
     for index, playlist in playlists:
-        if playlistsToPlay.find(index) < 0:
+        if (not random) and (playlistsToPlay.find(index) < 0):
             continue
 
         command &= " " & utils.cleanFilePath(playlist.location)
 
     command &= &" --no-video {utils.scriptOpts}"
 
-    if shuffle:
+    if shuffle or random:
         command &= " --shuffle"
 
-    if loop:
+    if loop or random:
         command &= " --loop-playlist"
     
     displayPlayerControls()
