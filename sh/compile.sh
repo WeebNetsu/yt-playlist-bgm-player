@@ -1,27 +1,40 @@
 #!/bin/bash
 
-echo "THIS IS NOT YET IMPLEMENTED FOR NIM! SCRIPT WILL NOT WORK"
+PRESENT_DIR=$(basename `pwd`)
 
-read -p 'Would you like to compile the source code? [y/n]: ' comp
+# make sure we're inside the sh folder
+if [[ $PRESENT_DIR != "sh" ]]; then
+    echo "Please run this script from the sh/ folder."
+    exit 1
+fi
+
+pushd "$(dirname "$0")"
+trap popd EXIT
+
+read -p 'This will install Nim packages and possibly overwrite yours with updated versions. Continue? [y/n]: ' comp
 
 set -e # quits the script as soon as an error happens
 
-COMPILE_SUCCESS=false
 if [[ $comp == "y" ]]; then
-    HAS_CMAKE=false
-    
-    echo "Checking for CMake"
-    cmake --version
+    echo -e "\tChecking for Nim"
+    nim --version
 
-    cd ..
-    mkdir build || echo "Does the build folder already exist?"
-    cd build
+    echo -e "\tChecking for Nimble"
+    nimble --version
 
-    echo "Start compiling!"
-    cmake ..
-    make
-    cp bgmplayer ../sh
-    echo "Build finished!"
+    echo -e "\tInstalling Nimble packages"
+    nimble install cligen -y
+
+    cd ../src
+
+    echo -e "\tStart compiling!"
+
+    nim c main.nim
+    mv main ../sh/bgmplayer
+
+    echo -e "\tBuild finished! (Check sh/ folder)"
+else
+    exit 1
 fi
+
 echo -e "\n\tCompile Success!\n"
-COMPILE_SUCCESS=true

@@ -1,5 +1,7 @@
 #! /bin/bash
 
+set -e # quits the script as soon as an error happens
+
 echo "Removing executable file to PATH"
 rm $HOME/bin/bgmplayer
 
