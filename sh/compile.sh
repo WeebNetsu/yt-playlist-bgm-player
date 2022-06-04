@@ -29,7 +29,7 @@ if [[ $comp == "y" ]]; then
 
     echo -e "\tStart compiling!"
 
-    nim c main.nim
+    nim c -d:release main.nim
     mv main ../sh/bgmplayer
 
     echo -e "\tBuild finished! (Check sh/ folder)"
