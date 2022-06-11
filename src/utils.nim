@@ -1,12 +1,14 @@
-import strformat
-from os import getConfigDir, joinPath, existsOrCreateDir, fileExists, normalizedPath
-from strutils import parseInt, toLowerAscii, strip, replace
-from terminal import setForegroundColor, resetAttributes, ForegroundColor
+import std/strformat
+from std/os import getConfigDir, joinPath, existsOrCreateDir, fileExists, normalizedPath
+from std/strutils import parseInt, toLowerAscii, strip, replace
+from std/terminal import setForegroundColor, resetAttributes, ForegroundColor
+
+type MessageType* = enum SUCCESS, WARN, NOTICE
 
 const 
     scriptOpts*: string = "--script-opts=ytdl_hook-ytdl_path=/usr/local/bin/yt-dlp"
     saveFolderName*: string = "ytbgmpcli"
-    saveFileName*: string = "playlists.txt"
+    saveFileName*: string = "playlists.json"
 
 let appSaveFile*: string = joinPath(getConfigDir(), saveFolderName, saveFileName)
 
@@ -32,16 +34,16 @@ proc criticalError*(errorMessage: string) =
     stdout.resetAttributes() # reset terminal colors & stuff
     system.quit()
 
-proc showMessage*(msg: string, msgType: string = "success") =
+proc showMessage*(msg: string, msgType: MessageType = MessageType.SUCCESS) =
     case msgType:
-        of "notice":
+        of MessageType.NOTICE:
             setForegroundColor(ForegroundColor.fgBlue)
             echo msg
-        of "warning":
+        of MessageType.WARN:
             setForegroundColor(ForegroundColor.fgYellow)
             # only warning and errors will prepended to the message
             echo "Warning: ", msg
-        of "success":
+        of MessageType.SUCCESS:
             setForegroundColor(ForegroundColor.fgGreen)
             echo msg
 
@@ -53,17 +55,17 @@ proc setup*(): bool =
     try:
         # check if dir exists, if not, create it
         if not existsOrCreateDir(configDir):
-            echo "Config folder not found, creating it..."
+            showMessage("Config folder not found, creating it...", MessageType.NOTICE)
     except OSError:
-        echo &"Failed to create config directory {configDir}"
+        showMessage(&"Failed to create config directory {configDir}", MessageType.WARN)
         return false
 
     try:
         if not fileExists(appSaveFile):
-            echo "Save file not found, creating it..."
-            writeFile(appSaveFile, "")
+            showMessage("Save file not found, creating it...", MessageType.NOTICE)
+            writeFile(appSaveFile, "[]")
     except OSError:
-        echo &"Failed to create config file: {appSaveFile}"
+        showMessage(&"Failed to create config file: {appSaveFile}", MessageType.WARN)
         return false
 
     return true
@@ -81,7 +83,7 @@ proc getSelectableOption*(question: string, options: openArray[string], inputStr
         let chosenOption: int = readLine(stdin).parseInt()
 
         if chosenOption > len(options):
-            showMessage("Invalid option... Does it exist?", "warning")
+            showMessage("Invalid option... Does it exist?", MessageType.WARN)
             return getSelectableOption(question, options, inputStr)
 
         return chosenOption
@@ -97,7 +99,7 @@ proc getYesNoAnswer*(question: string): bool =
     let confirm: string = readLine(stdin).strip()
 
     if confirm == "":
-        showMessage("Please answer with y or n.", "warning")
+        showMessage("Please answer with y or n.", MessageType.WARN)
         return getYesNoAnswer(question)
 
     # true if user replied with yes or y
@@ -139,4 +141,4 @@ proc displayHelp*() =
     (eg. bgmplayer --help). You can find out more about flags in the Github page.
     """
 
-    showMessage("\nSome problems may still occur and if it does, edit the code yourself if you have\nthe source code or remove the problem from the 'custom-playlists.txt' file (if\nthe problem is from the playlists file), or create an issue on Github:\n\thttps://github.com/WeebNetsu/yt-playlist-bgm-player", "notice")
+    showMessage("\nSome problems may still occur and if it does, edit the code yourself if you have\nthe source code or remove the problem from the 'custom-playlists.txt' file (if\nthe problem is from the playlists file), or create an issue on Github:\n\thttps://github.com/WeebNetsu/yt-playlist-bgm-player", MessageType.NOTICE)

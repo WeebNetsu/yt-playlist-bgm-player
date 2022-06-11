@@ -1,160 +1,81 @@
-import strformat
-from strutils import strip, split, find, parseInt, toLowerAscii, replace
-from sequtils import map
-from os import execShellCmd, normalizedPath, joinPath
-from random import shuffle
+import std/[
+    strformat, strutils, json
+]
+from std/sequtils import map, filter
+from std/os import execShellCmd, normalizedPath, joinPath
+from std/random import shuffle
 
 import utils
 
-# this is for updating/editing playlists
-type ModType = enum NAME, LINK, LOCAL, DELETE
+# these characters are just effort to maintain, rather not allow them
+const badChars = {'*', '\\', '"', '\''}
+    
+type
+    # this is for updating/editing playlists
+    ModType = enum NAME, LINK, DELETE
+    SaveFileData = object
+        name*: string
+        link*: string
+    SaveFile =  seq[SaveFileData]
 
 proc checkPlaylistExists(playlistName: string): bool =
-    if find(playlistName, "`") != -1 or find(playlistName, "~") != -1:
-        utils.showMessage("Invalid character found '~' or '`' in name", "warning")
+    if contains(playlistName, badChars):
+        utils.showMessage("Invalid character found '~' or '`' in name", utils.MessageType.WARN)
         return true
 
-    if(len(playlistName) < 1):
-        utils.showMessage("Invalid name entered", "warning")
+    if(len(playlistName.strip()) < 1):
+        utils.showMessage("Invalid name entered", utils.MessageType.WARN)
         return true
-    
-    var playlistFile: File
 
-    if not open(playlistFile, utils.appSaveFile): # check if file can be opened
+    try:
+        let saveFileContent: SaveFile = parseJSON(readFile(utils.appSaveFile)).to(SaveFile)
+
+        let foundFiles = filter(saveFileContent, proc(item: SaveFileData): bool = item.name.strip() == playlistName.strip())
+
+        if len(foundFiles) > 0:
+            utils.showMessage("Playlist with same name already exists", utils.MessageType.WARN)
+            return true
+    except IOError:
         utils.criticalError(&"Failed to open file: {utils.appSaveFile}")
-
-    var 
-        readingFile: bool = true
-        readingLine: int = 0
-
-    while readingFile:
-        readingLine += 1
-
-        try:
-            let lineRead = playlistFile.readLine().strip()
-
-            #  don't read empty lines
-            if lineRead == "":
-                continue
-
-            # if online, then we use ~, if locally, then we use `
-            # this is legacy code, might be changed in the future
-            # to use "/" and "http" instead of "~" and "`", since
-            # local playlists will always start with / and online with http(s)
-            var line: seq[string] = lineRead.split("~")
-
-            if len(line) != 2:
-                # if the playlist is stored locally
-                line = lineRead.split("`")
-
-                if len(line) != 2:
-                    readingFile = false
-                    utils.criticalError(&"Invalid line ({readingLine}) in file: {utils.appSaveFile}")
-
-            let playlist: string = line[0]
-
-            if playlist == playlistName:
-                utils.showMessage("Playlist with same name already exists", "warning")
-                close(playlistFile)
-                return true
-        except EOFError:
-            readingFile = false
-        except:
-            readingFile = false
-            close(playlistFile)
-            utils.criticalError(&"Failed to read file: {utils.appSaveFile}")
-
-    close(playlistFile)
     
     return false
 
 proc checkPlaylistFileEmpty(): bool =
     try:
-        let playlistFile: string = readFile(utils.appSaveFile)
-
-        if len(playlistFile.strip()) < 3:
-            return true
-    except:
+        return len(parseJSON(readFile(utils.appSaveFile))) < 1
+    except IOError:
         utils.criticalError(&"Failed to read file: {utils.appSaveFile}")
+    except JsonParsingError:
+        # if it cannot parse the json, good chance it is empty
+        return true
 
-    return false
-
-proc getPlaylists*(): seq[tuple[name: string, location: string, local: bool]] =
-    result = @[]
-    var playlistFile: File
-
-    if not open(playlistFile, utils.appSaveFile): # check if file can be opened
+proc getPlaylists*(): SaveFile =
+    try:
+        return parseJSON(readFile(utils.appSaveFile)).to(SaveFile)
+    except IOError:
         utils.criticalError(&"Failed to open file: {utils.appSaveFile}")
-
-    var 
-        readingFile: bool = true
-        readingLine: int = 0
-
-    while readingFile:
-        readingLine += 1
-        try:
-            let lineRead = playlistFile.readLine().strip()
-
-            #  don't read empty lines
-            if lineRead == "":
-                continue
-
-            var line: seq[string] = lineRead.split("~")
-            var local: bool = false
-
-            if len(line) != 2:
-                # if the playlist is stored locally
-                line = lineRead.split("`")
-                local = true
-
-                if len(line) != 2:
-                    readingFile = false
-                    utils.criticalError(&"Invalid line ({readingLine}) in file: {utils.appSaveFile}")
-
-            # line @ index 0 = playlist name
-            # line @ index 1 = playlist link/path
-            # echo &"{readingLine}. {line[0]}"
-            result.add((line[0], line[1], local))
-        except EOFError:
-            readingFile = false
-        except:
-            readingFile = false
-            close(playlistFile)
-            utils.criticalError(&"Failed to read file: {utils.appSaveFile}")
-
-    close(playlistFile)
+    except JsonParsingError:
+        utils.criticalError(&"Could not read json, please check config file: {utils.appSaveFile}")
 
 proc rewritePlaylistsFile(playlistNumber: int, modType: ModType, newChange: string = ""): bool = 
-    var playlists: seq[tuple[name: string, location: string, local: bool]] = getPlaylists()
+    var playlists: SaveFile = getPlaylists()
 
     case modType:
         of ModType.NAME:
-            # since 0 is used for canceling, user input starts at 1
             playlists[playlistNumber].name = newChange
         of ModType.LINK:
-            playlists[playlistNumber].location = newChange
-        of ModType.LOCAL:
-            playlists[playlistNumber].local = not playlists[playlistNumber].local
+            playlists[playlistNumber].link = newChange
         of ModType.DELETE:
             playlists.del(playlistNumber)
 
-    var newList: string = ""
-    for playlist in playlists:
-        if playlist.local:
-            newList &= &"\n{playlist.name}`{playlist.location}"
-        else:
-            newList &= &"\n{playlist.name}~{playlist.location}"
-
     try:
         let saveFile = open(utils.appSaveFile, fmWrite)
-        saveFile.write(newList)
+        saveFile.write(pretty(%playlists))
         saveFile.close()
 
         return true
     except IOError:
-        utils.showMessage(&"Failed to write to file: {utils.appSaveFile}", "warning")
-    except:
-        utils.showMessage(&"Failed to open file: {utils.appSaveFile}", "warning")
+        utils.showMessage(&"Failed to write to file: {utils.appSaveFile}", utils.MessageType.WARN)
 
     return false
 
@@ -162,8 +83,8 @@ proc updatePlaylistName(playlistNumber: int) =
     stdout.write("New name for playlist (cancel to cancel): ")
     let newName: string = readLine(stdin).strip()
 
-    if newName == "cancel":
-        utils.showMessage("--- Operation Canceled ---", "notice")
+    if newName == "cancel" or newName == "0":
+        utils.showMessage("--- Operation Canceled ---", utils.MessageType.NOTICE)
         return
 
     if checkPlaylistExists(newName):
@@ -171,27 +92,27 @@ proc updatePlaylistName(playlistNumber: int) =
         return
 
     if rewritePlaylistsFile(playlistNumber, ModType.NAME, newName):
-        utils.showMessage("--- Playlist Updated ---", "success")
+        utils.showMessage("--- Playlist Updated ---", utils.MessageType.SUCCESS)
     else:
-        utils.showMessage("Playlist could not be updated", "warning")
+        utils.showMessage("Playlist could not be updated", utils.MessageType.WARN)
 
 proc updatePlaylistLink(playlistNumber: int) =
     stdout.write("New link/location for playlist (cancel to cancel): ")
     let newLocation: string = readLine(stdin).strip()
 
     if newLocation == "cancel":
-        utils.showMessage("--- Operation Canceled ---", "notice")
+        utils.showMessage("--- Operation Canceled ---", utils.MessageType.NOTICE)
         return
 
     if newLocation == "":
-        utils.showMessage("Invalid link/location provided", "warning")
+        utils.showMessage("Invalid link/location provided", utils.MessageType.WARN)
         updatePlaylistLink(playlistNumber)
         return
 
     if rewritePlaylistsFile(playlistNumber, ModType.LINK, newLocation):
-        utils.showMessage("--- Playlist Updated ---", "success")
+        utils.showMessage("--- Playlist Updated ---", utils.MessageType.SUCCESS)
     else:
-        utils.showMessage("Playlist could not be updated", "warning")
+        utils.showMessage("Playlist could not be updated", utils.MessageType.WARN)
   
 proc displayPlayerControls() =
     echo "\nPlayer Controls:"
@@ -204,13 +125,13 @@ proc displayPlayerControls() =
 # if the user wants to play playlists without opening the interface
 proc instantPlayPlaylists*(playlistsToPlay: openArray[int], shuffle: bool = false, loop: bool = false, random: bool = false) =
     if(checkPlaylistFileEmpty()):
-        utils.showMessage("No playlists have been added, playlist file is empty.", "warning")
+        utils.showMessage("No playlists have been added, playlist file is empty.", utils.MessageType.WARN)
         return
 
-    var playlists: seq[tuple[name: string, location: string, local: bool]] = getPlaylists();
+    var playlists: SaveFile = getPlaylists();
 
     if random:
-      shuffle(playlists)
+        shuffle(playlists)
 
     var command = "mpv"
 
@@ -218,15 +139,19 @@ proc instantPlayPlaylists*(playlistsToPlay: openArray[int], shuffle: bool = fals
         if (not random) and (playlistsToPlay.find(index) < 0):
             continue
 
-        command &= " " & utils.cleanFilePath(playlist.location)
+        command &= " " & utils.cleanFilePath(playlist.link)
 
     command &= &" --no-video {utils.scriptOpts}"
 
     if shuffle or random:
         command &= " --shuffle"
+    else:
+        utils.showMessage("Not shuffling playlists", utils.MessageType.NOTICE)
 
     if loop or random:
         command &= " --loop-playlist"
+    else:
+        utils.showMessage("Not looping playlists", utils.MessageType.NOTICE)
     
     displayPlayerControls()
 
@@ -239,11 +164,11 @@ proc instantPlayPlaylists*(playlistsToPlay: openArray[int], shuffle: bool = fals
     
 proc playPlaylists*() =
     if(checkPlaylistFileEmpty()):
-        utils.showMessage("No playlists have been added, playlist file is empty.", "warning")
+        utils.showMessage("No playlists have been added, playlist file is empty.", utils.MessageType.WARN)
         return
 
-    let playlists: seq[tuple[name: string, location: string, local: bool]] = getPlaylists();
-    let playlistNames: seq[string] = map(playlists, proc(val: tuple[name: string, location: string, local: bool]): string = $val.name)
+    let playlists:SaveFile = getPlaylists();
+    let playlistNames: seq[string] = map(playlists, proc(val: SaveFileData): string = $val.name)
 
     for index, playlistName in playlistNames:
         echo &"{index + 1}. {playlistName}"
@@ -262,18 +187,18 @@ proc playPlaylists*() =
 
     for index, choice in chosenPlaylists:
         if choice == "0":
-            utils.showMessage("--- Operation Canceled ---", "notice")
+            utils.showMessage("--- Operation Canceled ---", utils.MessageType.NOTICE)
             return
 
         try:
             if parseInt(choice) < 1:
-                utils.showMessage("Invalid option detected. Please only enter valid numbers.", "warning")
+                utils.showMessage("Invalid option detected. Please only enter valid numbers.", utils.MessageType.WARN)
                 playPlaylists()
                 return
 
             cleanedChosenPlaylists.add(parseInt(choice) - 1)
         except ValueError:
-            utils.showMessage("Invalid option detected. Please only enter numbers.", "warning")
+            utils.showMessage("Invalid option detected. Please only enter numbers.", utils.MessageType.WARN)
             playPlaylists()
             return
 
@@ -283,7 +208,7 @@ proc playPlaylists*() =
         if cleanedChosenPlaylists.find(index) < 0:
             continue
 
-        command &= " " & utils.cleanFilePath(playlist.location)
+        command &= " " & utils.cleanFilePath(playlist.link)
 
     command &= &" --no-video {utils.scriptOpts}"
 
@@ -307,61 +232,58 @@ proc addPlaylist*() =
 
     let playlistName: string = readLine(stdin)
 
-    if playlistName == "cancel":
-        utils.showMessage("--- Operation Canceled ---", "notice")
+    if playlistName == "cancel" or playlistName == "0":
+        utils.showMessage("--- Operation Canceled ---", utils.MessageType.NOTICE)
         return
 
     if checkPlaylistExists(playlistName):
         addPlaylist()
         return
 
-    utils.showMessage("NOTE: If you're adding a local playlist, this is how your location should look: /home/netsu/my music", "notice")
+    utils.showMessage("NOTE: If you're adding a local playlist, this is how your location should look: /home/netsu/my music", utils.MessageType.NOTICE)
     # todo this is not windows safe, will only work on linux
-    utils.showMessage("NOTE: Please do not add any '\\', '*', '~', '`', '\"' or '\'' to the location and start from the root directory if on Linux", "notice")
+    utils.showMessage("NOTE: Please do not add any '\\', '*', '~', '`', '\"' or '\'' to the location and start from the root directory if on Linux", utils.MessageType.NOTICE)
 
     stdout.write("Please enter the location of the folder or the link to the playlist (cancel to cancel): ")
 
     let playlistLocation: string = readLine(stdin)
     if len(playlistLocation) < 1:
-        utils.showMessage("Location is invalid", "warning")
+        utils.showMessage("Location is invalid", utils.MessageType.WARN)
         addPlaylist()
         return
 
     if playlistLocation == "cancel":
-        utils.showMessage("--- Operation Canceled ---", "notice")
+        utils.showMessage("--- Operation Canceled ---", utils.MessageType.NOTICE)
         return
 
-    let localPlaylist: bool = playlistLocation[0] == '/'
-    
     # I think we limit it because of MPV, couldn't remember
-    if localPlaylist and (len(playlistLocation) > 60):
-        utils.showMessage("Path to playlist is too long. Try moving it to a folder closer to root (/)", "warning")
+    # so if the playlist is saved in a local directory and the length
+    # is > 60 characters
+    if playlistLocation[0] == '/' and (len(playlistLocation) > 60):
+        utils.showMessage("Path to playlist is too long. Try moving it to a folder closer to root (/)", utils.MessageType.WARN)
         addPlaylist()
         return
 
     try:
-        let saveFile = open(utils.appSaveFile, fmAppend)
+        var saveFileContent: SaveFile = parseJSON(readFile(utils.appSaveFile)).to(SaveFile)
 
-        if localPlaylist:
-            saveFile.write(&"\n{playlistName}`{playlistLocation}")
-        else:
-            saveFile.write(&"\n{playlistName}~{playlistLocation}")
+        saveFileContent.add(SaveFileData(name:playlistName, link:playlistLocation))
 
+        let saveFile = open(utils.appSaveFile, fmWrite)
+        saveFile.write(pretty(%saveFileContent))
         saveFile.close()
     except IOError:
-        utils.showMessage(&"Failed to write to file: {utils.appSaveFile}", "warning")
-    except:
-        utils.showMessage(&"Failed to open file: {utils.appSaveFile}", "warning")
+        utils.showMessage(&"Failed to write to file: {utils.appSaveFile}", utils.MessageType.WARN)
 
 proc updatePlaylist*() =
-    const playlistModifyOptions: array[3, string] = ["Playlist Name", "Playlist Link/Location", "Local/Online"]
+    const playlistModifyOptions: array[2, string] = ["Playlist Name", "Playlist Link/Location"]
 
     if checkPlaylistFileEmpty():
-        utils.showMessage("No playlists have been added, so there are no playlists to update...", "warning")
+        utils.showMessage("No playlists have been added, so there are no playlists to update...", utils.MessageType.WARN)
         return
 
-    let playlists: seq[tuple[name: string, location: string, local: bool]] = getPlaylists();
-    let playlistNames: seq[string] = map(playlists, proc(val: tuple[name: string, location: string, local: bool]): string = $val.name)
+    let playlists: SaveFile = getPlaylists();
+    let playlistNames: seq[string] = map(playlists, proc(val: SaveFileData): string = $val.name)
 
     let chosenPlaylist: int = utils.getSelectableOption("Choose a playlist:", playlistNames, "(Playlist to edit) > ")
 
@@ -372,44 +294,38 @@ proc updatePlaylist*() =
 
     case chosenOption:
         of 0:
-            utils.showMessage("Playlist not updated", "warning")
+            utils.showMessage("Playlist not updated", utils.MessageType.WARN)
             return
         of 1:
             # -1 since we use 0 as cancel and indexes start at 0
             updatePlaylistName(chosenPlaylist-1)
         of 2:
             updatePlaylistLink(chosenPlaylist-1);
-        of 3:
-            # change playlist status from online -> local and vice versa
-            if rewritePlaylistsFile(chosenPlaylist-1, ModType.LOCAL):
-                utils.showMessage("--- Playlist Updated ---", "success")
-            else:
-                utils.showMessage("Playlist could not be updated", "warning")
         else:
             # user should never end up here, but if they somehow do
             # just start over
-            utils.showMessage("Invalid option", "warning")
+            utils.showMessage("Invalid option", utils.MessageType.WARN)
             updatePlaylist()
             return
 
 proc removePlaylist*() =
     if checkPlaylistFileEmpty():
-        utils.showMessage("No playlists have been added, so there are no playlists to remove...", "notice")
+        utils.showMessage("No playlists have been added, so there are no playlists to remove...", utils.MessageType.NOTICE)
         return
 
-    let playlists: seq[tuple[name: string, location: string, local: bool]] = getPlaylists()
+    let playlists: SaveFile = getPlaylists()
 
-    let playlistNames: seq[string] = map(playlists, proc(val: tuple[name: string, location: string, local: bool]): string = $val.name)
+    let playlistNames: seq[string] = map(playlists, proc(val: SaveFileData): string = $val.name)
 
     let chosenPlaylist: int = utils.getSelectableOption("Choose a playlist:", playlistNames, "(Playlist to delete) > ")
 
     if chosenPlaylist == 0:
-        utils.showMessage("--- Operation Canceled ---", "notice")
+        utils.showMessage("--- Operation Canceled ---", utils.MessageType.NOTICE)
         return
 
     if not utils.getYesNoAnswer(&"Are you sure you want to delete playlist \"{playlistNames[chosenPlaylist-1]}\" forever?"):
-        utils.showMessage("Playlist NOT deleted", "notice")
+        utils.showMessage("Playlist NOT deleted", utils.MessageType.NOTICE)
         return
     
     if rewritePlaylistsFile(chosenPlaylist-1, ModType.DELETE):
-        utils.showMessage("Playlist deleted", "notice")
+        utils.showMessage("Playlist deleted", utils.MessageType.NOTICE)

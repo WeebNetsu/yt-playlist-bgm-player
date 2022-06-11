@@ -1,7 +1,7 @@
-from os import paramCount
-import cligen, strformat
-from sequtils import map
-from random import randomize
+from std/os import paramCount
+import pkg/cligen, std/strformat
+from std/sequtils import map
+from std/random import randomize
 
 import utils, player
 
@@ -10,10 +10,12 @@ system.setControlCHook(proc() {.noconv.} = criticalError("Unexpected exit!"))
 
 randomize()
 
-proc main(playlists: seq[int], list=false, random=false, noShuffle=false, noLoop=false) =
-    const menuOptions: array[5, string] = ["Play Playlists", "Add Playlist", "Edit Playlist", "Remove Playlist", "Help"]
+proc main(playlists: seq[int], list = false, random = false, noShuffle = false,
+        noLoop = false) =
+    const menuOptions: array[5, string] = ["Play Playlists", "Add Playlist",
+            "Edit Playlist", "Remove Playlist", "Help"]
 
-    utils.showMessage("Welcome!\n", "success")
+    utils.showMessage("Welcome!", utils.MessageType.SUCCESS)
 
     # if setup fails, we will not run the program
     var running: bool = utils.setup()
@@ -26,16 +28,16 @@ proc main(playlists: seq[int], list=false, random=false, noShuffle=false, noLoop
                 of 0:
                     running = false
                 of 1:
-                    utils.showMessage("Play Playlist", "notice")
+                    utils.showMessage("Play Playlist", utils.MessageType.NOTICE)
                     player.playPlaylists()
                 of 2:
-                    utils.showMessage("Add Playlist", "notice")
+                    utils.showMessage("Add Playlist", utils.MessageType.NOTICE)
                     player.addPlaylist()
                 of 3:
-                    utils.showMessage("Edit Playlist", "notice")
+                    utils.showMessage("Edit Playlist", utils.MessageType.NOTICE)
                     player.updatePlaylist()
                 of 4:
-                    utils.showMessage("Remove Playlist", "notice")
+                    utils.showMessage("Remove Playlist", utils.MessageType.NOTICE)
                     player.removePlaylist()
                 of 5:
                     utils.displayHelp()
@@ -54,23 +56,24 @@ proc main(playlists: seq[int], list=false, random=false, noShuffle=false, noLoop
             if random:
                 if len(playlists) > 0:
                     if playlists.find(0) >= 0:
-                        utils.showMessage("0 is not a valid playlist number", "warning")
+                        utils.showMessage("0 is not a valid playlist number", utils.MessageType.WARN)
                         break
 
                 player.instantPlayPlaylists([], true, true, true)
 
             if len(playlists) > 0:
                 if playlists.find(0) >= 0:
-                    utils.showMessage("0 is not a valid playlist number", "warning")
+                    utils.showMessage("0 is not a valid playlist number", utils.MessageType.WARN)
                     break
 
-                player.instantPlayPlaylists(map(playlists, proc(val: int): int = val - 1), not noShuffle, not noLoop)
+                player.instantPlayPlaylists(map(playlists, proc(
+                        val: int): int = val - 1), not noShuffle, not noLoop)
 
             running = false
 
-    utils.showMessage("\nGoodbye!", "notice")
+    utils.showMessage("\nGoodbye!", utils.MessageType.NOTICE)
 
-dispatch(main, help={
+dispatch(main, help = {
     "playlists": "Selected playlist(s) to play",
     "list": "Return list of available playlists",
     "random": "Play all your playlists in random order",

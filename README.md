@@ -17,6 +17,7 @@ Notes:
     <li><a href="#howToUpdate">How to update</a></li>
     <li><a href="#compilingTheCode">Compiling the code</a></li>
     <li><a href="#controls">Controls</a></li>
+    <li><a href="#thePlaylistFile">The playlist file</a></li>
     <li><a href="#features">Features</a></li>
     <ul>
         <li><a href="#playingPlaylists">Playing Playlists</a></li>
@@ -123,6 +124,12 @@ If you want to compile the source code yourself, you'll need the dependencies. Y
     </tr>
 </table>
 
+<span id="thePlaylistFile"></span>
+
+## The Playlist File
+
+The playlist file (also known as the save file) is stored in `$HOME/.config/ytbgmpcli/playlists.json`, this is where all the playlists and their related details are stored.
+
 <span id="features"></span>
 
 ## Features
@@ -161,7 +168,7 @@ If playing the playlist in it's normal order (YouTube: The way you ordered the p
 
 ## Flags
 
-If you don't want to use the interface, you can use flags to do some of the things you need to do. There are 3 types of flags, single-answer flags, multi-answer flags and the playlist flag.
+If you don't want to use the interface, you can use flags to do some of the things you need to do.
 
 <span id="thePlaylistFlag"></span>
 
