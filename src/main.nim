@@ -10,8 +10,8 @@ system.setControlCHook(proc() {.noconv.} = criticalError("Unexpected exit!"))
 
 randomize()
 
-proc main(playlists: seq[int], list = false, random = false, noShuffle = false,
-        noLoop = false) =
+proc main(playlists: seq[int], random = false, shuffle = false,
+        loop = false, list = false) =
     const menuOptions: array[5, string] = ["Play Playlists", "Add Playlist",
             "Edit Playlist", "Remove Playlist", "Help"]
 
@@ -67,7 +67,7 @@ proc main(playlists: seq[int], list = false, random = false, noShuffle = false,
                     break
 
                 player.instantPlayPlaylists(map(playlists, proc(
-                        val: int): int = val - 1), not noShuffle, not noLoop)
+                        val: int): int = val - 1), shuffle, loop)
 
             running = false
 
@@ -75,8 +75,8 @@ proc main(playlists: seq[int], list = false, random = false, noShuffle = false,
 
 dispatch(main, help = {
     "playlists": "Selected playlist(s) to play",
-    "list": "Return list of available playlists",
     "random": "Play all your playlists in random order",
-    "no-shuffle": "Disables playlist shuffling",
-    "no-loop": "Disables playlist looping",
+    "shuffle": "Enable playlist shuffling",
+    "loop": "Enable playlist looping",
+    "list": "Return list of available playlists",
 })

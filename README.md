@@ -37,6 +37,8 @@ _Note: You should have a stable internet connection to use the installer and You
 
 _Note: The executable inside the `sh` folder might be outdated (I might forget to move new executable to sh folder)! If you experience problems with it, compile the source code to generate a new executable._
 
+### Install
+
 Clone or download the files and make sure the installer.sh file is executable with:<br>
 `chmod +x installer.sh`<br>
 Run the installer.sh file (Ubuntu and Arch based distros only) and you're ready to run the application! To run the application, execute the following command in your terminal:<br>`bgmplayer`<br>
@@ -50,6 +52,23 @@ Run the installer.sh file (Ubuntu and Arch based distros only) and you're ready 
 5. Install yt-dlp with `yt-dlp --version || ( sudo wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /usr/local/bin/yt-dlp && sudo chmod a+rx /usr/local/bin/yt-dlp )`
 6. Add $HOME/bin to PATH (if not there already). (Put code inside .bashrc to avoid having to do it on every boot)
 7. Reboot
+
+### Run
+
+There are 2 ways to run this software, with or without flags. Without any flags it will provide a CLI you can use to play your playlists, with flags it will immediately start playing playlists.
+
+#### Example 1
+
+`bgmplayer` - this will provide the CLI
+
+#### Example 2
+
+`bgmplayer 1 2 --shuffle --loop` - this will play playlist nr 1 and 2, shuffle them and loop them.
+`bgmplayer 1 2 -sl` - this is the short version of the above
+
+#### Example 3
+
+`bgmplayer --list` - list all available playlists, if this flag is used, no other flags are allowed
 
 <span id="howToUpdate"></span>
 
@@ -186,27 +205,27 @@ This flag is used to run a playlist without opening the interface, this can be d
     </tr>
     <tr>
         <td>--help</td>
-          <td>-h</td>
+        <td>-h</td>
         <td>Displays help</td>
     </tr>
     <tr>
         <td>--list</td>
-          <td>-l</td>
+        <td>N/A</td>
         <td>Displays all playlists</td>
     </tr>
     <tr>
         <td>--random</td>
-          <td>-r</td>
+        <td>-r</td>
         <td>Play all your playlists in random order</td>
     </tr>
     <tr>
-        <td>--no-shuffle</td>
-        <td>-n</td>
-        <td>Disables playlist shuffling</td>
+        <td>--shuffle</td>
+        <td>-s</td>
+        <td>Shuffle playlists</td>
     </tr>
     <tr>
-        <td>--no-loop</td>
-        <td>N/A</td>
-        <td>Disables playlist looping</td>
+        <td>--loop</td>
+        <td>-l</td>
+        <td>Loop playlists</td>
     </tr>
 </table>
