@@ -18,25 +18,27 @@ type
         link*: string
     SaveFile =  seq[SaveFileData]
 
-proc checkPlaylistExists(playlistName: string): bool =
-    if contains(playlistName, badChars):
-        utils.showMessage("Invalid character found '~' or '`' in name", utils.MessageType.WARN)
-        return true
+# get playlists from playlist file
+proc getPlaylists*(): SaveFile =
+    try:
+        # read the save file, convert it to JSON and structure it like the SaveFile object
+        return parseJSON(readFile(utils.appSaveFile)).to(SaveFile)
+    except IOError:
+        utils.criticalError(&"Failed to open file: {utils.appSaveFile}")
+    except JsonParsingError:
+        utils.criticalError(&"Could not read json, please check config file: {utils.appSaveFile}")
 
-    if(len(playlistName.strip()) < 1):
+# This function will check if a playlist already exists in the playlist files
+proc checkPlaylistExists(playlistName: string): bool =
+    if contains(playlistName, badChars) or (len(playlistName.strip()) < 1):
         utils.showMessage("Invalid name entered", utils.MessageType.WARN)
         return true
 
-    try:
-        let saveFileContent: SaveFile = parseJSON(readFile(utils.appSaveFile)).to(SaveFile)
+    let foundFiles = filter(getPlaylists(), proc(item: SaveFileData): bool = item.name.strip() == playlistName.strip())
 
-        let foundFiles = filter(saveFileContent, proc(item: SaveFileData): bool = item.name.strip() == playlistName.strip())
-
-        if len(foundFiles) > 0:
-            utils.showMessage("Playlist with same name already exists", utils.MessageType.WARN)
-            return true
-    except IOError:
-        utils.criticalError(&"Failed to open file: {utils.appSaveFile}")
+    if len(foundFiles) > 0:
+        utils.showMessage("Playlist with same name already exists", utils.MessageType.WARN)
+        return true
     
     return false
 
@@ -49,70 +51,44 @@ proc checkPlaylistFileEmpty(): bool =
         # if it cannot parse the json, good chance it is empty
         return true
 
-proc getPlaylists*(): SaveFile =
-    try:
-        return parseJSON(readFile(utils.appSaveFile)).to(SaveFile)
-    except IOError:
-        utils.criticalError(&"Failed to open file: {utils.appSaveFile}")
-    except JsonParsingError:
-        utils.criticalError(&"Could not read json, please check config file: {utils.appSaveFile}")
-
-proc rewritePlaylistsFile(playlistNumber: int, modType: ModType, newChange: string = ""): bool = 
+proc rewritePlaylistsFile(playlistNumber: int, modType: ModType) = 
     var playlists: SaveFile = getPlaylists()
 
-    case modType:
-        of ModType.NAME:
-            playlists[playlistNumber].name = newChange
-        of ModType.LINK:
-            playlists[playlistNumber].link = newChange
-        of ModType.DELETE:
-            playlists.del(playlistNumber)
+    if modType == ModType.DELETE:
+        playlists.del(playlistNumber)
+    else:
+        # get the new value
+        stdout.write("Enter new value (cancel to cancel): ")
+        let change: string = readLine(stdin).strip()
+
+        # verify user input
+        if change == "cancel" or change == "0" or change == "" or playlistNumber == 0:
+            utils.showMessage("--- Operation Canceled ---", utils.MessageType.NOTICE)
+            return
+
+        # user should never get to here, but just in case, we add an else
+        case modType:
+            of ModType.NAME:
+                if checkPlaylistExists(change):
+                    rewritePlaylistsFile(playlistNumber, modType)
+                    return
+
+                playlists[playlistNumber].name = change
+            of ModType.LINK:
+                playlists[playlistNumber].link = change
+            else:
+                utils.criticalError("Unkown value given to playlist file rewrite!")
 
     try:
+        # rewrite the save file
         let saveFile = open(utils.appSaveFile, fmWrite)
+        # we use pretty incase the user wants to manually edit the playlist file
         saveFile.write(pretty(%playlists))
         saveFile.close()
 
-        return true
+        utils.showMessage("--- Playlists Updated ---", utils.MessageType.SUCCESS)
     except IOError:
         utils.showMessage(&"Failed to write to file: {utils.appSaveFile}", utils.MessageType.WARN)
-
-    return false
-
-proc updatePlaylistName(playlistNumber: int) =
-    stdout.write("New name for playlist (cancel to cancel): ")
-    let newName: string = readLine(stdin).strip()
-
-    if newName == "cancel" or newName == "0":
-        utils.showMessage("--- Operation Canceled ---", utils.MessageType.NOTICE)
-        return
-
-    if checkPlaylistExists(newName):
-        updatePlaylistName(playlistNumber)
-        return
-
-    if rewritePlaylistsFile(playlistNumber, ModType.NAME, newName):
-        utils.showMessage("--- Playlist Updated ---", utils.MessageType.SUCCESS)
-    else:
-        utils.showMessage("Playlist could not be updated", utils.MessageType.WARN)
-
-proc updatePlaylistLink(playlistNumber: int) =
-    stdout.write("New link/location for playlist (cancel to cancel): ")
-    let newLocation: string = readLine(stdin).strip()
-
-    if newLocation == "cancel":
-        utils.showMessage("--- Operation Canceled ---", utils.MessageType.NOTICE)
-        return
-
-    if newLocation == "":
-        utils.showMessage("Invalid link/location provided", utils.MessageType.WARN)
-        updatePlaylistLink(playlistNumber)
-        return
-
-    if rewritePlaylistsFile(playlistNumber, ModType.LINK, newLocation):
-        utils.showMessage("--- Playlist Updated ---", utils.MessageType.SUCCESS)
-    else:
-        utils.showMessage("Playlist could not be updated", utils.MessageType.WARN)
   
 proc displayPlayerControls() =
     echo "\nPlayer Controls:"
@@ -131,16 +107,21 @@ proc instantPlayPlaylists*(playlistsToPlay: openArray[int], shuffle: bool = fals
     var playlists: SaveFile = getPlaylists();
 
     if random:
+        # shuffle all the playlists
         shuffle(playlists)
 
+    # start of the mpv command to execute
     var command = "mpv"
 
+    # add the links to all the playlists that has to be played
     for index, playlist in playlists:
+        # if the user selected random, it will add all playlists
         if (not random) and (playlistsToPlay.find(index) < 0):
             continue
 
         command &= " " & utils.cleanFilePath(playlist.link)
 
+    # remove video, so only music plays
     command &= &" --no-video {utils.scriptOpts}"
 
     if shuffle or random:
@@ -167,11 +148,10 @@ proc playPlaylists*() =
         utils.showMessage("No playlists have been added, playlist file is empty.", utils.MessageType.WARN)
         return
 
-    let playlists:SaveFile = getPlaylists();
-    let playlistNames: seq[string] = map(playlists, proc(val: SaveFileData): string = $val.name)
+    let playlists: SaveFile = getPlaylists();
 
-    for index, playlistName in playlistNames:
-        echo &"{index + 1}. {playlistName}"
+    for index, playlist in playlists:
+        echo &"{index + 1}. {playlist.name}"
 
     echo "0. Cancel"
 
@@ -191,6 +171,7 @@ proc playPlaylists*() =
             return
 
         try:
+            # try to convert input to numbers
             if parseInt(choice) < 1:
                 utils.showMessage("Invalid option detected. Please only enter valid numbers.", utils.MessageType.WARN)
                 playPlaylists()
@@ -298,9 +279,9 @@ proc updatePlaylist*() =
             return
         of 1:
             # -1 since we use 0 as cancel and indexes start at 0
-            updatePlaylistName(chosenPlaylist-1)
+            rewritePlaylistsFile(chosenPlaylist-1, ModType.NAME)
         of 2:
-            updatePlaylistLink(chosenPlaylist-1);
+            rewritePlaylistsFile(chosenPlaylist-1, ModType.LINK);
         else:
             # user should never end up here, but if they somehow do
             # just start over
@@ -327,5 +308,4 @@ proc removePlaylist*() =
         utils.showMessage("Playlist NOT deleted", utils.MessageType.NOTICE)
         return
     
-    if rewritePlaylistsFile(chosenPlaylist-1, ModType.DELETE):
-        utils.showMessage("Playlist deleted", utils.MessageType.NOTICE)
+    rewritePlaylistsFile(chosenPlaylist-1, ModType.DELETE)
