@@ -6,7 +6,7 @@ from std/random import randomize
 import utils, player
 
 # if the user ctrl+c out of the application
-system.setControlCHook(proc() {.noconv.} = criticalError("Unexpected exit!"))
+system.setControlCHook(proc() {.noconv.} = criticalError("Unexpected exit! (Please use 'q' instead)"))
 
 randomize()
 
