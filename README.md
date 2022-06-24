@@ -33,25 +33,11 @@ Notes:
 
 ## How to install and run
 
-_Note: You should have a stable internet connection to use the installer and YouTube playlist player. Also, the installer only works on **Ubuntu** and **Arch** based distros._
-
-_Note: The executable inside the `sh` folder might be outdated (I might forget to move new executable to sh folder)! If you experience problems with it, compile the source code to generate a new executable._
+_Note: You should have a stable internet connection to use YouTube playlist player._
 
 ### Install
 
-Clone or download the files and make sure the installer.sh file is executable with:<br>
-`chmod +x installer.sh`<br>
-Run the installer.sh file (Ubuntu and Arch based distros only) and you're ready to run the application! To run the application, execute the following command in your terminal:<br>`bgmplayer`<br>
-**If you don't have an Ubuntu or Arch based Linux distro**, you can compile the code (or use the prebuilt "bgmplayer" file) and just mimic everything happening in the installer.sh, but modified for your system. The steps are simple:
-
-1. Compile the code into an executable (optional)
-   1.5. If you compiled it yourself, rename the executable to "bgmplayer"
-2. Make the executable (prebuilt, or manually compiled) runnable with `chmod +x bgmplayer`
-3. Move/Copy the file to your $HOME/bin directory (create it if it does not exist)
-4. Install MPV and Python 3
-5. Install yt-dlp with `yt-dlp --version || ( sudo wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /usr/local/bin/yt-dlp && sudo chmod a+rx /usr/local/bin/yt-dlp )`
-6. Add $HOME/bin to PATH (if not there already). (Put code inside .bashrc to avoid having to do it on every boot)
-7. Reboot
+Clone or download the files run this in the project root directory: `nimble install`<br>
 
 ### Run
 
@@ -59,30 +45,34 @@ There are 2 ways to run this software, with or without flags. Without any flags 
 
 #### Example 1
 
-`bgmplayer` - this will provide the CLI
+`ytbgmplayer` - this will provide the CLI
 
 #### Example 2
 
-`bgmplayer 1 2 --shuffle --loop` - this will play playlist nr 1 and 2, shuffle them and loop them.
-`bgmplayer 1 2 -sl` - this is the short version of the above
+`ytbgmplayer 1 2 --shuffle --loop` - this will play playlist nr 1 and 2, shuffle them and loop them.
+`ytbgmplayer 1 2 -sl` - this is the short version of the above
 
 #### Example 3
 
-`bgmplayer --list` - list all available playlists, if this flag is used, no other flags are allowed
+`ytbgmplayer --list` - list all available playlists, if this flag is used, no other flags are allowed
 
 <span id="howToUpdate"></span>
 
 ## How to update
 
-If the application has a new version, just download it and put the executable inside your `$HOME/bin` directory.
+Woops! Some hardcore changes are currently happening! Updating is currently only possible to those with some Nim knowledge!
+
+<!-- If the application has a new version, just download it and put the executable inside your `$HOME/bin` directory. -->
 
 <span id="compilingTheCode"></span>
 
 ## Compiling the code
 
-If you want to compile the source code yourself, you'll need the dependencies. You can either compile by executing `compile.sh` or `install.sh` (`install.sh` will also install application and dependencies) in the `sh/` directory, or by doing the following inside the `src/` directory: `nim c main.nim`
+If you want to compile the source code yourself, you'll need the dependencies listed below.
 
-**NOTE:** `compile.sh` will generate the new executable and also save it inside the `sh` folder.
+To compile the code: `nimble build`
+To run the code: `nimble run`
+To install: `nimble install`
 
 <span id="dependencies"></span>
 
@@ -193,7 +183,7 @@ If you don't want to use the interface, you can use flags to do some of the thin
 
 ### The playlist flag
 
-This flag is used to run a playlist without opening the interface, this can be done by running bgmplayer with the playlist number afterwards. This should always be added when using multi-answer flags.<br>Example of the playlist flag: <code>bgmplayer 2</code> (will play playlist nr. 2)<br>Another example of the playlist flag: <code>bgmplayer 1 2</code> (will play playlist nr. 1 & 2)
+This flag is used to run a playlist without opening the interface, this can be done by running ytbgmplayer with the playlist number afterwards. This should always be added when using multi-answer flags.<br>Example of the playlist flag: <code>bgmplayer 2</code> (will play playlist nr. 2)<br>Another example of the playlist flag: <code>bgmplayer 1 2</code> (will play playlist nr. 1 & 2)
 
 ### All other flags
 

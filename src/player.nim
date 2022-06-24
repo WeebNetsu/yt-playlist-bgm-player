@@ -126,13 +126,11 @@ proc instantPlayPlaylists*(playlistsToPlay: openArray[int], shuffle: bool = fals
 
     if shuffle or random:
         command &= " --shuffle"
-    else:
-        utils.showMessage("Not shuffling playlists", utils.MessageType.NOTICE)
+        utils.showMessage("Shuffling playlists", utils.MessageType.NOTICE)
 
     if loop or random:
         command &= " --loop-playlist"
-    else:
-        utils.showMessage("Not looping playlists", utils.MessageType.NOTICE)
+        utils.showMessage("Looping playlists", utils.MessageType.NOTICE)
     
     displayPlayerControls()
 
