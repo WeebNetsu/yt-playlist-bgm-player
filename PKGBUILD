@@ -5,10 +5,10 @@
 
 # Maintainer: Stephen <stephenvdw.social@gmail.com>
 pkgname=yt-bgm-player-git
-pkgver=1.2.5.r61.6ce36db
+pkgver=1.2.9.r62.fb9ac65
 pkgrel=1
 # epoch=
-pkgdesc="A lightweight youtube background music player, for playing YouTube or local music in the background."
+pkgdesc="A lightweight youtube background music player"
 arch=(x86_64)
 url="https://github.com/WeebNetsu/yt-playlist-bgm-player.git"
 license=('GPL-3.0')
@@ -34,34 +34,22 @@ md5sums=("SKIP")
 
 pkgver(){
 	cd "${_pkgname}"
-	printf "1.2.5.r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+	printf "1.2.9.r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
 }
-
-# prepare() {
-# 	cd "$pkgname-$pkgver"
-# 	patch -p1 -i "$srcdir/$pkgname-$pkgver.patch"
-# }
 
 build() {
 	pwd
-	# cd yt-playlist-bgm-player
-	export NIMBLE_DIR=/tmp/${pkgname}/nimble
-	nimble build
-	# nim c -d:release -o:ytbgmplayer main.nim
+	cd yt-playlist-bgm-player
+	export NIMBLE_DIR=nimble-data
+	nimble build -d:release
 	chmod +x ytbgmplayer
 }
 
-# check() {
-# 	cd "$pkgname-$pkgver"
-# 	make -k check
-# }
-
 package() {
-	# cd yt-playlist-bgm-player
+	cd yt-playlist-bgm-player
 	mkdir -p ${pkgdir}/usr/bin
 	cp -rf ytbgmplayer ${pkgdir}/usr/bin/ytbgmplayer
-
+	install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 	# TODO: Add readme and license https://youtu.be/iUz28vbWgVw
-
 	echo "NOTICE: You need yt-dlp to play music from YouTube."
 }

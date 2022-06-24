@@ -70,9 +70,8 @@ Woops! Some hardcore changes are currently happening! Updating is currently only
 
 If you want to compile the source code yourself, you'll need the dependencies listed below.
 
-To compile the code: `nimble build`
+To compile the code: `nimble build -d:release`
 To run the code: `nimble run`
-To install: `nimble install`
 
 <span id="dependencies"></span>
 

@@ -6,3 +6,6 @@ build/
 ignore/
 tmp/
 pkg/
+yt-playlist-bgm-player/
+yt-bgm-player-git-*
+ytbgmplayer
