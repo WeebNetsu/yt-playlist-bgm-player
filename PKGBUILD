@@ -4,8 +4,8 @@
 # then please put 'unknown'.
 
 # Maintainer: Stephen <stephenvdw.social@gmail.com>
-pkgname=yt-bgm-player-git
-pkgver=1.2.9.r62.fb9ac65
+pkgname=ytbgmplayer-git
+pkgver=1.2.10.r63.03ac5e8
 pkgrel=1
 # epoch=
 pkgdesc="A lightweight youtube background music player"
@@ -34,7 +34,7 @@ md5sums=("SKIP")
 
 pkgver(){
 	cd "${_pkgname}"
-	printf "1.2.9.r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+	printf "1.2.10.r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
 }
 
 build() {
