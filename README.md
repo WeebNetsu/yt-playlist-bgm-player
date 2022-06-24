@@ -37,6 +37,12 @@ _Note: You should have a stable internet connection to use YouTube playlist play
 
 ### Install
 
+#### AUR
+
+`paru -S ytbgmplayer-git`
+
+#### From Source
+
 Clone or download the files run this in the project root directory: `nimble install`<br>
 
 ### Run
@@ -60,9 +66,13 @@ There are 2 ways to run this software, with or without flags. Without any flags 
 
 ## How to update
 
-Woops! Some hardcore changes are currently happening! Updating is currently only possible to those with some Nim knowledge!
+### AUR
 
-<!-- If the application has a new version, just download it and put the executable inside your `$HOME/bin` directory. -->
+You can use whichever AUR package manager you prefer to update the package
+
+### From Source
+
+Follow all the steps as in _install_.
 
 <span id="compilingTheCode"></span>
 
