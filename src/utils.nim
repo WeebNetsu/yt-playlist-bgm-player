@@ -6,7 +6,7 @@ from std/terminal import setForegroundColor, resetAttributes, ForegroundColor
 type MessageType* = enum SUCCESS, WARN, NOTICE
 
 const 
-    scriptOpts*: string = "--script-opts=ytdl_hook-ytdl_path=/usr/local/bin/yt-dlp"
+    scriptOpts*: string = "--script-opts=ytdl_hook-ytdl_path=/usr/bin/yt-dlp"
     saveFolderName*: string = "ytbgmpcli"
     saveFileName*: string = "playlists.json"
 
