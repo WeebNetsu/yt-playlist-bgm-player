@@ -1,6 +1,6 @@
 # Package
 
-version       = "1.2"
+version       = "1.2.13"
 author        = "WeebNetsu"
 description   = "A lightweight music player for playing YouTube music in the background."
 license       = "MIT"

@@ -9,14 +9,14 @@ import utils
 
 # these characters are just effort to maintain, rather not allow them
 const badChars = {'*', '\\', '"', '\''}
-    
+
 type
     # this is for updating/editing playlists
     ModType = enum NAME, LINK, DELETE
     SaveFileData = object
         name*: string
         link*: string
-    SaveFile =  seq[SaveFileData]
+    SaveFile = seq[SaveFileData]
 
 # get playlists from playlist file
 proc getPlaylists*(): SaveFile =
@@ -39,7 +39,7 @@ proc checkPlaylistExists(playlistName: string): bool =
     if len(foundFiles) > 0:
         utils.showMessage("Playlist with same name already exists", utils.MessageType.WARN)
         return true
-    
+
     return false
 
 proc checkPlaylistFileEmpty(): bool =
@@ -51,7 +51,7 @@ proc checkPlaylistFileEmpty(): bool =
         # if it cannot parse the json, good chance it is empty
         return true
 
-proc rewritePlaylistsFile(playlistNumber: int, modType: ModType) = 
+proc rewritePlaylistsFile(playlistNumber: int, modType: ModType) =
     var playlists: SaveFile = getPlaylists()
 
     if modType == ModType.DELETE:
@@ -77,7 +77,7 @@ proc rewritePlaylistsFile(playlistNumber: int, modType: ModType) =
             of ModType.LINK:
                 playlists[playlistNumber].link = change
             else:
-                utils.criticalError("Unkown value given to playlist file rewrite!")
+                utils.criticalError("Unknown value given to playlist file rewrite!")
 
     try:
         # rewrite the save file
@@ -89,7 +89,7 @@ proc rewritePlaylistsFile(playlistNumber: int, modType: ModType) =
         utils.showMessage("--- Playlists Updated ---", utils.MessageType.SUCCESS)
     except IOError:
         utils.showMessage(&"Failed to write to file: {utils.appSaveFile}", utils.MessageType.WARN)
-  
+
 proc displayPlayerControls() =
     echo "\nPlayer Controls:"
     echo "\t[SPACE] - Pause\t\t\tm - Mute"
@@ -97,29 +97,37 @@ proc displayPlayerControls() =
     echo "\t[Up Arrow] - Skip 1 Minute\t[Down Arrow] - Rewind 1 Minute"
     echo "\t> - Next Song\t\t\t< - Previous Song"
     echo "\tq - Quit"
-   
+
 # if the user wants to play playlists without opening the interface
-proc instantPlayPlaylists*(playlistsToPlay: openArray[int], shuffle: bool = false, loop: bool = false, random: bool = false) =
+proc instantPlayPlaylists*(playlistsToPlay: openArray[int], shuffle: bool = false, loop: bool = false,
+        random: bool = false) =
     if(checkPlaylistFileEmpty()):
         utils.showMessage("No playlists have been added, playlist file is empty.", utils.MessageType.WARN)
         return
 
-    var playlists: SaveFile = getPlaylists();
+    var
+        playlists: SaveFile = getPlaylists()
+        # start of the mpv command to execute
+        command = "mpv"
 
     if random:
+        # if the user selected random, it will add all their playlists
         # shuffle all the playlists
         shuffle(playlists)
+        # add the links to all the playlists that has to be played
+        for index, playlist in playlists:
+            command &= " " & utils.cleanFilePath(playlist.link)
+    else:
+        # add the links to all the playlists that has to be played
+        for _, p in playlistsToPlay:
+            let originalPlaylistNr = p + 1
+            # playlist number are determined by the line number it can be found on, so
+            # below makes sure that the line number actually exists, if it does not
+            # it will throw an error
+            if len(playlists) < originalPlaylistNr:
+                utils.criticalError(&"Playlist nr {originalPlaylistNr} does not exist.")
 
-    # start of the mpv command to execute
-    var command = "mpv"
-
-    # add the links to all the playlists that has to be played
-    for index, playlist in playlists:
-        # if the user selected random, it will add all playlists
-        if (not random) and (playlistsToPlay.find(index) < 0):
-            continue
-
-        command &= " " & utils.cleanFilePath(playlist.link)
+            command &= " " & utils.cleanFilePath(playlists[p].link)
 
     # remove video, so only music plays
     command &= &" --no-video {utils.scriptOpts}"
@@ -131,7 +139,7 @@ proc instantPlayPlaylists*(playlistsToPlay: openArray[int], shuffle: bool = fals
     if loop or random:
         command &= " --loop-playlist"
         utils.showMessage("Looping playlists", utils.MessageType.NOTICE)
-    
+
     displayPlayerControls()
 
     # todo this command (mpv) will only work on Linux (and maybe Mac)
@@ -140,7 +148,7 @@ proc instantPlayPlaylists*(playlistsToPlay: openArray[int], shuffle: bool = fals
         # not stopping it from running and allow the user to choose
         # a playlist again
         utils.criticalError("Error while trying to run MPV command")
-    
+
 proc playPlaylists*() =
     if(checkPlaylistFileEmpty()):
         utils.showMessage("No playlists have been added, playlist file is empty.", utils.MessageType.WARN)
@@ -196,7 +204,7 @@ proc playPlaylists*() =
 
     if utils.getYesNoAnswer("Loop playlists?"):
         command &= " --loop-playlist"
-    
+
     displayPlayerControls()
 
     # todo this command (mpv) will only work on Linux (and maybe Mac)
@@ -219,9 +227,11 @@ proc addPlaylist*() =
         addPlaylist()
         return
 
-    utils.showMessage("NOTE: If you're adding a local playlist, this is how your location should look: /home/netsu/my music", utils.MessageType.NOTICE)
+    utils.showMessage("NOTE: If you're adding a local playlist, the path should look similar to this: /home/username/my music",
+            utils.MessageType.NOTICE)
     # todo this is not windows safe, will only work on linux
-    utils.showMessage("NOTE: Please do not add any '\\', '*', '~', '`', '\"' or '\'' to the location and start from the root directory if on Linux", utils.MessageType.NOTICE)
+    utils.showMessage("NOTE: Please do not add any '\\', '*', '~', '`', '\"' or '\'' to the location and start from the root directory if on Linux",
+            utils.MessageType.NOTICE)
 
     stdout.write("Please enter the location of the folder or the link to the playlist (cancel to cancel): ")
 
@@ -239,14 +249,15 @@ proc addPlaylist*() =
     # so if the playlist is saved in a local directory and the length
     # is > 60 characters
     if playlistLocation[0] == '/' and (len(playlistLocation) > 60):
-        utils.showMessage("Path to playlist is too long. Try moving it to a folder closer to root (/)", utils.MessageType.WARN)
+        utils.showMessage("Path to playlist is too long. Try moving it to a folder closer to root (/)",
+                utils.MessageType.WARN)
         addPlaylist()
         return
 
     try:
         var saveFileContent: SaveFile = parseJSON(readFile(utils.appSaveFile)).to(SaveFile)
 
-        saveFileContent.add(SaveFileData(name:playlistName, link:playlistLocation))
+        saveFileContent.add(SaveFileData(name: playlistName, link: playlistLocation))
 
         let saveFile = open(utils.appSaveFile, fmWrite)
         saveFile.write(pretty(%saveFileContent))
@@ -258,7 +269,8 @@ proc updatePlaylist*() =
     const playlistModifyOptions: array[2, string] = ["Playlist Name", "Playlist Link/Location"]
 
     if checkPlaylistFileEmpty():
-        utils.showMessage("No playlists have been added, so there are no playlists to update...", utils.MessageType.WARN)
+        utils.showMessage("No playlists have been added, so there are no playlists to update...",
+                utils.MessageType.WARN)
         return
 
     let playlists: SaveFile = getPlaylists();
@@ -289,7 +301,8 @@ proc updatePlaylist*() =
 
 proc removePlaylist*() =
     if checkPlaylistFileEmpty():
-        utils.showMessage("No playlists have been added, so there are no playlists to remove...", utils.MessageType.NOTICE)
+        utils.showMessage("No playlists have been added, so there are no playlists to remove...",
+                utils.MessageType.NOTICE)
         return
 
     let playlists: SaveFile = getPlaylists()
@@ -305,5 +318,5 @@ proc removePlaylist*() =
     if not utils.getYesNoAnswer(&"Are you sure you want to delete playlist \"{playlistNames[chosenPlaylist-1]}\" forever?"):
         utils.showMessage("Playlist NOT deleted", utils.MessageType.NOTICE)
         return
-    
+
     rewritePlaylistsFile(chosenPlaylist-1, ModType.DELETE)

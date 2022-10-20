@@ -53,11 +53,13 @@ proc main(playlists: seq[int], random = false, shuffle = false,
                 # list cannot be used with other flags
                 break
 
+            # when a user decides to use the random flag, they cannot specify what playlists to play
+            # randomly. To play specific playlists randomly, they can use the shuffle flag
             if random:
-                if len(playlists) > 0:
-                    if playlists.find(0) >= 0:
-                        utils.showMessage("0 is not a valid playlist number", utils.MessageType.WARN)
-                        break
+                # if len(playlists) > 0:
+                #     if playlists.find(0) >= 0:
+                #         utils.showMessage("0 is not a valid playlist number", utils.MessageType.WARN)
+                #         break
 
                 player.instantPlayPlaylists([], true, true, true)
 
