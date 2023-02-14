@@ -1,5 +1,5 @@
 from std/os import paramCount
-import pkg/cligen, std/strformat
+import pkg/[cligen, mpv], std/strformat
 from std/sequtils import map
 from std/random import randomize
 
@@ -16,6 +16,25 @@ proc main(playlists: seq[int], random = false, shuffle = false,
             "Edit Playlist", "Remove Playlist", "Help"]
 
     utils.showMessage("Welcome!", utils.MessageType.SUCCESS)
+
+    # Create the MPV context to use MPV
+    let ctx = mpv.create()
+    if ctx.isNil:
+        echo "failed creating mpv context"
+        return
+
+    # set the nim context options
+    # Enable default key bindings, so the user can actually interact with
+    # the player (and e.g. close the window).
+    ctx.set_option("terminal", "yes")
+    ctx.set_option("input-default-bindings", "yes")
+    ctx.set_option("input-vo-keyboard", "yes")
+    ctx.set_option("osc", true)
+    # ctx.set_option("loop-playlist", "yes")
+    ctx.set_option("vid", "no") # disable video playback
+
+    # check for any errors before continuing
+    check_error(ctx.initialize())
 
     # if setup fails, we will not run the program
     var running: bool = utils.setup()
