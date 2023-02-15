@@ -99,8 +99,7 @@ proc displayPlayerControls() =
     echo "\tq - Quit"
 
 # if the user wants to play playlists without opening the interface
-proc instantPlayPlaylists*(ctx: auto, playlistsToPlay: openArray[int], loop: bool = false,
-        random: bool = false) =
+proc instantPlayPlaylists*(mpvCtx: auto, playlistsToPlay: openArray[int]) =
     if(checkPlaylistFileEmpty()):
         utils.showMessage("No playlists have been added, playlist file is empty.", utils.MessageType.WARN)
         return
@@ -110,43 +109,25 @@ proc instantPlayPlaylists*(ctx: auto, playlistsToPlay: openArray[int], loop: boo
         # start of the mpv command to execute
         command = ""
 
-    if random:
-        # if the user selected random, it will add all their playlists
-        # shuffle all the playlists
-        shuffle(playlists)
-        # add the links to all the playlists that has to be played
-        for index, playlist in playlists:
-            if len(command) > 0:
-                command &= " "
+    # add the links to all the playlists that has to be played
+    for _, p in playlistsToPlay:
+        let originalPlaylistNr = p + 1
+        # playlist number are determined by the line number it can be found on, so
+        # below makes sure that the line number actually exists, if it does not
+        # it will throw an error
+        if len(playlists) < originalPlaylistNr:
+            utils.criticalError(&"Playlist nr {originalPlaylistNr} does not exist.")
 
-            command &= utils.cleanFilePath(playlist.link)
+        if len(command) > 0:
+            command &= " "
 
-        ctx.set_option("shuffle", "yes")
-        utils.showMessage("Shuffling playlists", utils.MessageType.NOTICE)
-    else:
-        # add the links to all the playlists that has to be played
-        for _, p in playlistsToPlay:
-            let originalPlaylistNr = p + 1
-            # playlist number are determined by the line number it can be found on, so
-            # below makes sure that the line number actually exists, if it does not
-            # it will throw an error
-            if len(playlists) < originalPlaylistNr:
-                utils.criticalError(&"Playlist nr {originalPlaylistNr} does not exist.")
-
-            if len(command) > 0:
-                command &= " "
-
-            command &= utils.cleanFilePath(playlists[p].link)
-
-    if loop or random:
-        ctx.set_option("loop-playlist", "yes")
-        utils.showMessage("Looping playlists", utils.MessageType.NOTICE)
+        command &= utils.cleanFilePath(playlists[p].link)
 
     displayPlayerControls()
 
-    ctx.command("loadfile", command)
+    mpvCtx.command("loadfile", command)
 
-proc playPlaylists*(ctx: auto) =
+proc playPlaylists*(mpvCtx: auto) =
     if(checkPlaylistFileEmpty()):
         utils.showMessage("No playlists have been added, playlist file is empty.", utils.MessageType.WARN)
         return
@@ -165,7 +146,7 @@ proc playPlaylists*(ctx: auto) =
 
     if len(chosenPlaylists) < 1:
         echo "Please enter at least 1 number"
-        playPlaylists(ctx)
+        playPlaylists(mpvCtx)
         return
 
     for index, choice in chosenPlaylists:
@@ -177,13 +158,13 @@ proc playPlaylists*(ctx: auto) =
             # try to convert input to numbers
             if parseInt(choice) < 1:
                 utils.showMessage("Invalid option detected. Please only enter valid numbers.", utils.MessageType.WARN)
-                playPlaylists(ctx)
+                playPlaylists(mpvCtx)
                 return
 
             cleanedChosenPlaylists.add(parseInt(choice) - 1)
         except ValueError:
             utils.showMessage("Invalid option detected. Please only enter numbers.", utils.MessageType.WARN)
-            playPlaylists(ctx)
+            playPlaylists(mpvCtx)
             return
 
     var command = ""
@@ -198,14 +179,14 @@ proc playPlaylists*(ctx: auto) =
         command &= utils.cleanFilePath(playlist.link)
 
     if utils.getYesNoAnswer("Would you like to shuffle the playlists?"):
-        ctx.set_option("shuffle", "yes")
+        mpvCtx.set_option("shuffle", "yes")
 
     if utils.getYesNoAnswer("Loop playlists?"):
-        ctx.set_option("loop-playlist", "yes")
+        mpvCtx.set_option("loop-playlist", "yes")
 
     displayPlayerControls()
 
-    ctx.command("loadfile", command)
+    mpvCtx.command("loadfile", command)
 
 proc addPlaylist*() =
     stdout.write("Please enter a name for the new playlist(type cancel to cancel): ")

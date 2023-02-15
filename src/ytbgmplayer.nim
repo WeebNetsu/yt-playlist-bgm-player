@@ -10,7 +10,7 @@ system.setControlCHook(proc() {.noconv.} = criticalError("Unexpected exit! (Plea
 
 randomize()
 
-proc keypress(): int =
+proc keyPress(): int =
     # this function just returns the key that was pressed
     var pwin = initscr()
     raw()
@@ -27,62 +27,91 @@ proc checkMpvError(errno: cint) =
     if errno < 0:
         echo("Happy Error")
 
-proc main(playlists: seq[int], random = false, shuffle = false,
-        loop = false, list = false) =
+# var bool -> reference (would be `int &paused` in C++)
+proc manageMPVKeyPress(mpvCtx: auto, paused: var bool, muted: var bool): bool =
+    # returning false means quite the application
+    let kp = keyPress()
+
+    # we can put all our key press events here!
+    case kp
+    of ord(' '):
+        if paused:
+            checkMpvError(mpvCtx.set_option_string("pause", "no"))
+        else:
+            checkMpvError(mpvCtx.set_option_string("pause", "yes"))
+
+        paused = not paused
+    of ord('q'):
+        return false
+    of ord('>'):
+        mpvCtx.command("playlist-next", "force")
+    of ord('<'):
+        mpvCtx.command("playlist-prev", "force")
+    of ord('m'):
+        mpvCtx.set_option("mute", if muted: "no" else: "yes")
+        muted = not muted
+    of 258: # down
+        mpvCtx.command("seek", "-60")
+    of 259: # up
+        mpvCtx.command("seek", "60")
+    of 260: # left
+        mpvCtx.command("seek", "-10")
+    of 261: # right
+        mpvCtx.command("seek", "10")
+    else:
+        return true
+    return true
+
+proc main(playlists: seq[int], shuffle = false, loop = false, list = false) =
     const menuOptions: array[5, string] = ["Play Playlists", "Add Playlist",
             "Edit Playlist", "Remove Playlist", "Help"]
 
     utils.showMessage("Welcome!", utils.MessageType.SUCCESS)
 
     # Create the MPV context to use MPV
-    let ctx = mpv.create()
-    if ctx.isNil:
+    let mpvCtx = mpv.create()
+    if mpvCtx.isNil:
         echo "failed creating mpv context"
         return
 
     # set the nim context options
     # Enable default key bindings, so the user can actually interact with
     # the player (and e.g. close the window).
-    ctx.set_option("terminal", "yes")
-    ctx.set_option("input-default-bindings", "yes")
-    ctx.set_option("input-vo-keyboard", "yes")
-    ctx.set_option("osc", true)
-    ctx.set_option("ytdl", "yes")
-    ctx.set_option("script-opts", "ytdl_hook-ytdl_path=/usr/bin/yt-dlp")
-    # ctx.set_option("loop-playlist", "yes")
-    ctx.set_option("vid", "no") # disable video playback
+    mpvCtx.set_option("terminal", "yes")
+    mpvCtx.set_option("input-default-bindings", "yes")
+    mpvCtx.set_option("input-vo-keyboard", "yes")
+    mpvCtx.set_option("osc", true)
+    mpvCtx.set_option("ytdl", "yes")
+    mpvCtx.set_option("script-opts", "ytdl_hook-ytdl_path=/usr/bin/yt-dlp")
+    # mpvCtx.set_option("loop-playlist", "yes")
+    mpvCtx.set_option("vid", "no") # disable video playback
+
+    if shuffle:
+        mpvCtx.set_option("shuffle", "yes")
+        utils.showMessage("Shuffling playlists", utils.MessageType.NOTICE)
+
+    if loop:
+        mpvCtx.set_option("loop-playlist", "yes")
+        utils.showMessage("Looping playlists", utils.MessageType.NOTICE)
 
     # check for any errors before continuing
-    check_error(ctx.initialize())
+    check_error(mpvCtx.initialize())
 
     var
         # if setup fails, we will not run the program
         running: bool = utils.setup()
         playing: bool = false
+        # MPV playing options
         paused: bool = false
+        muted: bool = false
 
     while running:
         if playing:
-            let
-                kp = keypress()
-                event = ctx.wait_event(10000)
+            let event = mpvCtx.wait_event(10000)
 
-            # we can put all our keypress events here!
-            case kp
-            of ord(' '):
-                # printw("SPACES\n")
-                # ctx.command("pause", "yes")
-                if paused:
-                    checkMpvError(ctx.set_option_string("pause", "no"))
-                else:
-                    checkMpvError(ctx.set_option_string("pause", "yes"))
-
-                paused = not paused
-            of ord('q'):
+            if not manageMPVKeyPress(mpvCtx, paused, muted):
                 break
-            else:
-                continue
-                # printw("Not allowed\n")
+
             if event.event_id == mpv.EVENT_SHUTDOWN:
                 break
 
@@ -96,7 +125,7 @@ proc main(playlists: seq[int], random = false, shuffle = false,
                     running = false
                 of 1:
                     utils.showMessage("Play Playlist", utils.MessageType.NOTICE)
-                    player.playPlaylists(ctx)
+                    player.playPlaylists(mpvCtx)
                     playing = true
                 of 2:
                     utils.showMessage("Add Playlist", utils.MessageType.NOTICE)
@@ -123,14 +152,9 @@ proc main(playlists: seq[int], random = false, shuffle = false,
 
             # when a user decides to use the random flag, they cannot specify what playlists to play
             # randomly. To play specific playlists randomly, they can use the shuffle flag
-            if random:
-                # if len(playlists) > 0:
-                #     if playlists.find(0) >= 0:
-                #         utils.showMessage("0 is not a valid playlist number", utils.MessageType.WARN)
-                #         break
-
-                playing = true
-                player.instantPlayPlaylists(ctx, [], true, true)
+            # if random:
+            #     playing = true
+            #     player.instantPlayPlaylists(mpvCtx, [])
 
             if len(playlists) > 0:
                 if playlists.find(0) >= 0:
@@ -138,20 +162,19 @@ proc main(playlists: seq[int], random = false, shuffle = false,
                     break
 
                 playing = true
-                player.instantPlayPlaylists(ctx, map(playlists, proc(
-                        val: int): int = val - 1), shuffle, loop)
+                player.instantPlayPlaylists(mpvCtx, map(playlists, proc(val: int): int = val - 1))
 
 
             if not playing:
                 running = false
 
-    mpv.terminate_destroy(ctx)
+    mpv.terminate_destroy(mpvCtx)
 
     utils.showMessage("\nGoodbye!", utils.MessageType.NOTICE)
 
 dispatch(main, help = {
     "playlists": "Selected playlist(s) to play",
-    "random": "Play all your playlists in random order",
+    # "random": "Play all your playlists in random order",
     "shuffle": "Enable playlist shuffling",
     "loop": "Enable playlist looping",
     "list": "Return list of available playlists",
