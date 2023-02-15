@@ -1,5 +1,5 @@
 from std/os import paramCount
-import pkg/[cligen, mpv], std/strformat
+import pkg/[cligen, mpv, ncurses], std/strformat
 from std/sequtils import map
 from std/random import randomize
 
@@ -9,6 +9,23 @@ import utils, player
 system.setControlCHook(proc() {.noconv.} = criticalError("Unexpected exit! (Please use 'q' instead)"))
 
 randomize()
+
+proc keypress(): int =
+    # this function just returns the key that was pressed
+    var pwin = initscr()
+    raw()
+    keypad(pwin, true)
+    noecho()
+
+    let ch: cint = getch()
+
+    endwin()
+    return int(ch)
+
+
+proc checkMpvError(errno: cint) =
+    if errno < 0:
+        echo("Happy Error")
 
 proc main(playlists: seq[int], random = false, shuffle = false,
         loop = false, list = false) =
@@ -30,16 +47,47 @@ proc main(playlists: seq[int], random = false, shuffle = false,
     ctx.set_option("input-default-bindings", "yes")
     ctx.set_option("input-vo-keyboard", "yes")
     ctx.set_option("osc", true)
+    ctx.set_option("ytdl", "yes")
+    ctx.set_option("script-opts", "ytdl_hook-ytdl_path=/usr/bin/yt-dlp")
     # ctx.set_option("loop-playlist", "yes")
     ctx.set_option("vid", "no") # disable video playback
 
     # check for any errors before continuing
     check_error(ctx.initialize())
 
-    # if setup fails, we will not run the program
-    var running: bool = utils.setup()
+    var
+        # if setup fails, we will not run the program
+        running: bool = utils.setup()
+        playing: bool = false
+        paused: bool = false
 
     while running:
+        if playing:
+            let
+                kp = keypress()
+                event = ctx.wait_event(10000)
+
+            # we can put all our keypress events here!
+            case kp
+            of ord(' '):
+                # printw("SPACES\n")
+                # ctx.command("pause", "yes")
+                if paused:
+                    checkMpvError(ctx.set_option_string("pause", "no"))
+                else:
+                    checkMpvError(ctx.set_option_string("pause", "yes"))
+
+                paused = not paused
+            of ord('q'):
+                break
+            else:
+                continue
+                # printw("Not allowed\n")
+            if event.event_id == mpv.EVENT_SHUTDOWN:
+                break
+
+            continue
+
         if paramCount() == 0:
             let choice = utils.getSelectableOption("", menuOptions)
 
@@ -48,7 +96,8 @@ proc main(playlists: seq[int], random = false, shuffle = false,
                     running = false
                 of 1:
                     utils.showMessage("Play Playlist", utils.MessageType.NOTICE)
-                    player.playPlaylists()
+                    player.playPlaylists(ctx)
+                    playing = true
                 of 2:
                     utils.showMessage("Add Playlist", utils.MessageType.NOTICE)
                     player.addPlaylist()
@@ -91,6 +140,8 @@ proc main(playlists: seq[int], random = false, shuffle = false,
                         val: int): int = val - 1), shuffle, loop)
 
             running = false
+
+    mpv.terminate_destroy(ctx)
 
     utils.showMessage("\nGoodbye!", utils.MessageType.NOTICE)
 

@@ -149,7 +149,7 @@ proc instantPlayPlaylists*(playlistsToPlay: openArray[int], shuffle: bool = fals
         # a playlist again
         utils.criticalError("Error while trying to run MPV command")
 
-proc playPlaylists*() =
+proc playPlaylists*(ctx: auto) =
     if(checkPlaylistFileEmpty()):
         utils.showMessage("No playlists have been added, playlist file is empty.", utils.MessageType.WARN)
         return
@@ -168,7 +168,7 @@ proc playPlaylists*() =
 
     if len(chosenPlaylists) < 1:
         echo "Please enter at least 1 number"
-        playPlaylists()
+        playPlaylists(ctx)
         return
 
     for index, choice in chosenPlaylists:
@@ -180,39 +180,47 @@ proc playPlaylists*() =
             # try to convert input to numbers
             if parseInt(choice) < 1:
                 utils.showMessage("Invalid option detected. Please only enter valid numbers.", utils.MessageType.WARN)
-                playPlaylists()
+                playPlaylists(ctx)
                 return
 
             cleanedChosenPlaylists.add(parseInt(choice) - 1)
         except ValueError:
             utils.showMessage("Invalid option detected. Please only enter numbers.", utils.MessageType.WARN)
-            playPlaylists()
+            playPlaylists(ctx)
             return
 
-    var command = "mpv"
+    var command = ""
+    # var command = "mpv"
 
     for index, playlist in playlists:
         if cleanedChosenPlaylists.find(index) < 0:
             continue
 
-        command &= " " & utils.cleanFilePath(playlist.link)
+        if len(command) < 1:
+            command &= utils.cleanFilePath(playlist.link)
+        else:
+            command &= " " & utils.cleanFilePath(playlist.link)
 
-    command &= &" --no-video {utils.scriptOpts}"
+    # command &= &" --no-video {utils.scriptOpts}"
 
     if utils.getYesNoAnswer("Would you like to shuffle the playlists?"):
-        command &= " --shuffle"
+        # command &= " --shuffle"
+        ctx.set_option("shuffle", "yes")
 
     if utils.getYesNoAnswer("Loop playlists?"):
-        command &= " --loop-playlist"
+        # command &= " --loop-playlist"
+        ctx.set_option("loop-playlist", "yes")
 
     displayPlayerControls()
 
+    ctx.command("loadfile", command)
+
     # todo this command (mpv) will only work on Linux (and maybe Mac)
-    if execShellCmd(command) != 0:
+    # if execShellCmd(command) != 0:
         # this will save the program, in the future we can consider
         # not stopping it from running and allow the user to choose
         # a playlist again
-        utils.criticalError("Error while trying to run MPV command")
+        # utils.criticalError("Error while trying to run MPV command")
 
 proc addPlaylist*() =
     stdout.write("Please enter a name for the new playlist(type cancel to cancel): ")
