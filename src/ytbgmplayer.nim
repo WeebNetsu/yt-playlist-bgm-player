@@ -129,17 +129,21 @@ proc main(playlists: seq[int], random = false, shuffle = false,
                 #         utils.showMessage("0 is not a valid playlist number", utils.MessageType.WARN)
                 #         break
 
-                player.instantPlayPlaylists([], true, true, true)
+                playing = true
+                player.instantPlayPlaylists(ctx, [], true, true)
 
             if len(playlists) > 0:
                 if playlists.find(0) >= 0:
                     utils.showMessage("0 is not a valid playlist number", utils.MessageType.WARN)
                     break
 
-                player.instantPlayPlaylists(map(playlists, proc(
+                playing = true
+                player.instantPlayPlaylists(ctx, map(playlists, proc(
                         val: int): int = val - 1), shuffle, loop)
 
-            running = false
+
+            if not playing:
+                running = false
 
     mpv.terminate_destroy(ctx)
 

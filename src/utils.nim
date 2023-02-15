@@ -28,7 +28,7 @@ proc displayMenu*(menuOptions: openArray[string]) =
 proc cleanFilePath*(path: string): string =
     # if a local playlist
     if os.isAbsolute(path):
-        return normalizedPath(path).replace(" ", "\\ ").joinPath("*")
+        return normalizedPath(path).replace(" ", "\\ ").joinPath()
 
     return path
 
