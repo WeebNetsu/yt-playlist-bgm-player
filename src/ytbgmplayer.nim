@@ -1,66 +1,14 @@
 from std/os import paramCount
-import pkg/[cligen, mpv, ncurses], std/strformat
+import pkg/[cligen, mpv], std/strformat
 from std/sequtils import map
 from std/random import randomize
 
-import utils, player
+import utils, player, mpvconf
 
 # if the user ctrl+c out of the application
-system.setControlCHook(proc() {.noconv.} = criticalError("Unexpected exit! (Please use 'q' instead)"))
+system.setControlCHook(proc() {.noconv.} = utils.criticalError("Unexpected exit! (Please use 'q' instead)"))
 
 randomize()
-
-proc keyPress(): int =
-    # this function just returns the key that was pressed
-    var pwin = initscr()
-    raw()
-    keypad(pwin, true)
-    noecho()
-
-    let ch: cint = getch()
-
-    endwin()
-    return int(ch)
-
-
-proc checkMpvError(errno: cint) =
-    if errno < 0:
-        echo("Happy Error")
-
-# var bool -> reference (would be `int &paused` in C++)
-proc manageMPVKeyPress(mpvCtx: auto, paused: var bool, muted: var bool): bool =
-    # returning false means quite the application
-    let kp = keyPress()
-
-    # we can put all our key press events here!
-    case kp
-    of ord(' '):
-        if paused:
-            checkMpvError(mpvCtx.set_option_string("pause", "no"))
-        else:
-            checkMpvError(mpvCtx.set_option_string("pause", "yes"))
-
-        paused = not paused
-    of ord('q'):
-        return false
-    of ord('>'):
-        mpvCtx.command("playlist-next", "force")
-    of ord('<'):
-        mpvCtx.command("playlist-prev", "force")
-    of ord('m'):
-        mpvCtx.set_option("mute", if muted: "no" else: "yes")
-        muted = not muted
-    of 258: # down
-        mpvCtx.command("seek", "-60")
-    of 259: # up
-        mpvCtx.command("seek", "60")
-    of 260: # left
-        mpvCtx.command("seek", "-10")
-    of 261: # right
-        mpvCtx.command("seek", "10")
-    else:
-        return true
-    return true
 
 proc main(playlists: seq[int], shuffle = false, loop = false, list = false) =
     const menuOptions: array[5, string] = ["Play Playlists", "Add Playlist",
@@ -69,33 +17,7 @@ proc main(playlists: seq[int], shuffle = false, loop = false, list = false) =
     utils.showMessage("Welcome!", utils.MessageType.SUCCESS)
 
     # Create the MPV context to use MPV
-    let mpvCtx = mpv.create()
-    if mpvCtx.isNil:
-        echo "failed creating mpv context"
-        return
-
-    # set the nim context options
-    # Enable default key bindings, so the user can actually interact with
-    # the player (and e.g. close the window).
-    mpvCtx.set_option("terminal", "yes")
-    mpvCtx.set_option("input-default-bindings", "yes")
-    mpvCtx.set_option("input-vo-keyboard", "yes")
-    mpvCtx.set_option("osc", true)
-    mpvCtx.set_option("ytdl", "yes")
-    mpvCtx.set_option("script-opts", "ytdl_hook-ytdl_path=/usr/bin/yt-dlp")
-    # mpvCtx.set_option("loop-playlist", "yes")
-    mpvCtx.set_option("vid", "no") # disable video playback
-
-    if shuffle:
-        mpvCtx.set_option("shuffle", "yes")
-        utils.showMessage("Shuffling playlists", utils.MessageType.NOTICE)
-
-    if loop:
-        mpvCtx.set_option("loop-playlist", "yes")
-        utils.showMessage("Looping playlists", utils.MessageType.NOTICE)
-
-    # check for any errors before continuing
-    check_error(mpvCtx.initialize())
+    let mpvCtx = mpvconf.initMpvCtx(shuffle, loop)
 
     var
         # if setup fails, we will not run the program
@@ -109,7 +31,7 @@ proc main(playlists: seq[int], shuffle = false, loop = false, list = false) =
         if playing:
             let event = mpvCtx.wait_event(10000)
 
-            if not manageMPVKeyPress(mpvCtx, paused, muted):
+            if not mpvconf.manageMPVKeyPress(mpvCtx, paused, muted):
                 break
 
             if event.event_id == mpv.EVENT_SHUTDOWN:
@@ -117,7 +39,7 @@ proc main(playlists: seq[int], shuffle = false, loop = false, list = false) =
 
             continue
 
-        if paramCount() == 0:
+        if os.paramCount() == 0:
             let choice = utils.getSelectableOption("", menuOptions)
 
             case choice:
@@ -172,7 +94,7 @@ proc main(playlists: seq[int], shuffle = false, loop = false, list = false) =
 
     utils.showMessage("\nGoodbye!", utils.MessageType.NOTICE)
 
-dispatch(main, help = {
+cligen.dispatch(main, help = {
     "playlists": "Selected playlist(s) to play",
     # "random": "Play all your playlists in random order",
     "shuffle": "Enable playlist shuffling",

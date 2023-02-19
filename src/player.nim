@@ -1,9 +1,5 @@
-import std/[
-    strformat, strutils, json
-]
+import std/[strformat, strutils, json]
 from std/sequtils import map, filter
-from std/os import execShellCmd, normalizedPath, joinPath
-from std/random import shuffle
 
 import utils
 

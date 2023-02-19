@@ -2,12 +2,11 @@ import std/strformat
 from std/os import getConfigDir, joinPath, existsOrCreateDir, fileExists, normalizedPath
 from std/strutils import parseInt, toLowerAscii, strip, replace
 from std/terminal import setForegroundColor, resetAttributes, ForegroundColor
+import pkg/ncurses
 
 type MessageType* = enum SUCCESS, WARN, NOTICE
 
 const
-    # The flag and path to yt-dlp
-    scriptOpts*: string = "--script-opts=ytdl_hook-ytdl_path=/usr/bin/yt-dlp"
     # the folder at which any files related to the program gets saved
     saveFolderName*: string = "ytbgmpcli"
     # name of the file that stores playlist information
@@ -112,6 +111,18 @@ proc getYesNoAnswer*(question: string): bool =
 
     # true if user replied with yes or y
     return (toLowerAscii(confirm) == "y") or (toLowerAscii(confirm) == "yes")
+
+proc getKeyPress*(): int =
+    # this function just returns the key that was pressed
+    var pwin = initscr()
+    raw()
+    keypad(pwin, true)
+    noecho()
+
+    let ch: cint = getch()
+
+    endwin()
+    return int(ch)
 
 proc displayHelp*() =
     # https://git.sr.ht/~reesmichael1/nim-pager
