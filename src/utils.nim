@@ -52,14 +52,6 @@ proc showMessage*(msg: string, msgType: MessageType = MessageType.SUCCESS) =
 
     stdout.resetAttributes() # reset terminal colors & stuff
 
-proc detectDependencies*() =
-    const dependencies = ["mpv", "yt-dlp"]
-
-    # find the executable dependencies this project requires
-    for dep in dependencies:
-        if os.findExe(dep) == "":
-            criticalError(&"Dependency \"{dep}\" was not found on your system, please install it.")
-
 proc setup*(): bool =
     let configDir = os.joinPath(os.getConfigDir(), saveFolderName)
 
@@ -121,14 +113,14 @@ proc getYesNoAnswer*(question: string): bool =
 
 proc getKeyPress*(): int =
     # this function just returns the key that was pressed
-    var pwin = initscr()
-    raw()
-    keypad(pwin, true)
-    noecho()
+    var pwin = ncurses.initscr()
+    ncurses.raw()
+    ncurses.keypad(pwin, true)
+    # ncurses.noecho()
 
-    let ch: cint = getch()
+    let ch: cint = ncurses.getch()
 
-    endwin()
+    ncurses.endwin()
     return int(ch)
 
 proc displayHelp*() =

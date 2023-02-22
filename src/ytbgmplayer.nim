@@ -1,5 +1,6 @@
+import std/strformat
+import pkg/[cligen, mpv]
 from std/os import paramCount
-import pkg/[cligen, mpv], std/strformat
 from std/sequtils import map
 from std/random import randomize
 
@@ -12,7 +13,15 @@ system.setControlCHook(proc() {.noconv.} = utils.criticalError("Unexpected exit!
 randomize()
 
 proc main(playlists: seq[int], shuffle = false, loop = false, list = false) =
-    detectDependencies()
+    # check to make sure that the MPV dependency is installed
+    if os.findExe("mpv") == "":
+        criticalError("Dependency \"MPV\" was not found on your system, please install it.")
+
+    if os.findExe("yt-dlp") == "":
+        utils.showMessage(
+            "Dependency \"yt-dlp\" was not found on your system, you cannot play music from YouTube without it.\n\tInstall it with `pip install yt-dlp`",
+            utils.MessageType.WARN
+        )
 
     const menuOptions: array[5, string] = ["Play Playlists", "Add Playlist",
             "Edit Playlist", "Remove Playlist", "Help"]

@@ -7,6 +7,7 @@ import utils
 # returns auto, since idk what type mpv.create() actually returns
 proc initMpvCtx*(shuffle: bool, loop: bool): auto =
     let mpvCtx = mpv.create()
+
     if mpvCtx.isNil:
         echo "failed creating mpv context"
         return
@@ -38,6 +39,7 @@ proc initMpvCtx*(shuffle: bool, loop: bool): auto =
 
 proc checkMpvError*(errno: cint) =
     if errno < 0:
+        # todo user will not be as happy as this error lol
         echo("Happy Error")
 
 # var bool -> reference (would be `int &paused` in C++)
