@@ -1,5 +1,4 @@
-import std/strformat
-from std/os import getConfigDir, joinPath, existsOrCreateDir, fileExists, normalizedPath
+import std/[strformat, os]
 from std/strutils import parseInt, toLowerAscii, strip, replace
 from std/terminal import setForegroundColor, resetAttributes, ForegroundColor
 import pkg/ncurses
@@ -13,7 +12,7 @@ const
     saveFileName*: string = "playlists.json"
 
 # path to the save file
-let appSaveFile*: string = joinPath(getConfigDir(), saveFolderName, saveFileName)
+let appSaveFile*: string = os.joinPath(os.getConfigDir(), saveFolderName, saveFileName)
 
 proc displayMenu*(menuOptions: openArray[string]) =
     ## Display a menu with numbers at the front and ending with "0. Exit"
@@ -27,7 +26,7 @@ proc displayMenu*(menuOptions: openArray[string]) =
 proc cleanFilePath*(path: string): string =
     # if a local playlist
     if os.isAbsolute(path):
-        return normalizedPath(path).replace(" ", "\\ ").joinPath()
+        return os.normalizedPath(path).replace(" ", "\\ ").joinPath()
 
     return path
 
@@ -53,19 +52,27 @@ proc showMessage*(msg: string, msgType: MessageType = MessageType.SUCCESS) =
 
     stdout.resetAttributes() # reset terminal colors & stuff
 
+proc detectDependencies*() =
+    const dependencies = ["mpv", "yt-dlp"]
+
+    # find the executable dependencies this project requires
+    for dep in dependencies:
+        if os.findExe(dep) == "":
+            criticalError(&"Dependency \"{dep}\" was not found on your system, please install it.")
+
 proc setup*(): bool =
-    let configDir = joinPath(getConfigDir(), saveFolderName)
+    let configDir = os.joinPath(os.getConfigDir(), saveFolderName)
 
     try:
         # check if dir exists, if not, create it
-        if not existsOrCreateDir(configDir):
+        if not os.existsOrCreateDir(configDir):
             showMessage("Config folder not found, creating it...", MessageType.NOTICE)
     except OSError:
         showMessage(&"Failed to create config directory {configDir}", MessageType.WARN)
         return false
 
     try:
-        if not fileExists(appSaveFile):
+        if not os.fileExists(appSaveFile):
             showMessage("Save file not found, creating it...", MessageType.NOTICE)
             writeFile(appSaveFile, "[]")
     except OSError:

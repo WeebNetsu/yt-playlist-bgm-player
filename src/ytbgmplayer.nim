@@ -6,11 +6,14 @@ from std/random import randomize
 import utils, player, mpvconf
 
 # if the user ctrl+c out of the application
+# todo make it quit safely
 system.setControlCHook(proc() {.noconv.} = utils.criticalError("Unexpected exit! (Please use 'q' instead)"))
 
 randomize()
 
 proc main(playlists: seq[int], shuffle = false, loop = false, list = false) =
+    detectDependencies()
+
     const menuOptions: array[5, string] = ["Play Playlists", "Add Playlist",
             "Edit Playlist", "Remove Playlist", "Help"]
 

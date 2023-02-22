@@ -1,3 +1,5 @@
+from std/os import findExe
+import std/strformat
 import pkg/mpv
 
 import utils
@@ -17,7 +19,7 @@ proc initMpvCtx*(shuffle: bool, loop: bool): auto =
     mpvCtx.set_option("input-vo-keyboard", "yes")
     mpvCtx.set_option("osc", true)
     mpvCtx.set_option("ytdl", "yes")
-    mpvCtx.set_option("script-opts", "ytdl_hook-ytdl_path=/usr/bin/yt-dlp")
+    mpvCtx.set_option("script-opts", &"""ytdl_hook-ytdl_path={os.findExe("yt-dlp")}""")
     # mpvCtx.set_option("loop-playlist", "yes")
     mpvCtx.set_option("vid", "no") # disable video playback
 
