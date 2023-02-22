@@ -1,9 +1,5 @@
-import std/[
-    strformat, strutils, json
-]
+import std/[strformat, strutils, json]
 from std/sequtils import map, filter
-from std/os import execShellCmd, normalizedPath, joinPath
-from std/random import shuffle
 
 import utils
 
@@ -99,8 +95,7 @@ proc displayPlayerControls() =
     echo "\tq - Quit"
 
 # if the user wants to play playlists without opening the interface
-proc instantPlayPlaylists*(playlistsToPlay: openArray[int], shuffle: bool = false, loop: bool = false,
-        random: bool = false) =
+proc instantPlayPlaylists*(mpvCtx: auto, playlistsToPlay: openArray[int]) =
     if(checkPlaylistFileEmpty()):
         utils.showMessage("No playlists have been added, playlist file is empty.", utils.MessageType.WARN)
         return
@@ -108,48 +103,27 @@ proc instantPlayPlaylists*(playlistsToPlay: openArray[int], shuffle: bool = fals
     var
         playlists: SaveFile = getPlaylists()
         # start of the mpv command to execute
-        command = "mpv"
+        command = ""
 
-    if random:
-        # if the user selected random, it will add all their playlists
-        # shuffle all the playlists
-        shuffle(playlists)
-        # add the links to all the playlists that has to be played
-        for index, playlist in playlists:
-            command &= " " & utils.cleanFilePath(playlist.link)
-    else:
-        # add the links to all the playlists that has to be played
-        for _, p in playlistsToPlay:
-            let originalPlaylistNr = p + 1
-            # playlist number are determined by the line number it can be found on, so
-            # below makes sure that the line number actually exists, if it does not
-            # it will throw an error
-            if len(playlists) < originalPlaylistNr:
-                utils.criticalError(&"Playlist nr {originalPlaylistNr} does not exist.")
+    # add the links to all the playlists that has to be played
+    for _, p in playlistsToPlay:
+        let originalPlaylistNr = p + 1
+        # playlist number are determined by the line number it can be found on, so
+        # below makes sure that the line number actually exists, if it does not
+        # it will throw an error
+        if len(playlists) < originalPlaylistNr:
+            utils.criticalError(&"Playlist nr {originalPlaylistNr} does not exist.")
 
-            command &= " " & utils.cleanFilePath(playlists[p].link)
+        if len(command) > 0:
+            command &= " "
 
-    # remove video, so only music plays
-    command &= &" --no-video {utils.scriptOpts}"
-
-    if shuffle or random:
-        command &= " --shuffle"
-        utils.showMessage("Shuffling playlists", utils.MessageType.NOTICE)
-
-    if loop or random:
-        command &= " --loop-playlist"
-        utils.showMessage("Looping playlists", utils.MessageType.NOTICE)
+        command &= utils.cleanFilePath(playlists[p].link)
 
     displayPlayerControls()
 
-    # todo this command (mpv) will only work on Linux (and maybe Mac)
-    if execShellCmd(command) != 0:
-        # this will save the program, in the future we can consider
-        # not stopping it from running and allow the user to choose
-        # a playlist again
-        utils.criticalError("Error while trying to run MPV command")
+    mpvCtx.command("loadfile", command)
 
-proc playPlaylists*() =
+proc playPlaylists*(mpvCtx: auto) =
     if(checkPlaylistFileEmpty()):
         utils.showMessage("No playlists have been added, playlist file is empty.", utils.MessageType.WARN)
         return
@@ -168,7 +142,7 @@ proc playPlaylists*() =
 
     if len(chosenPlaylists) < 1:
         echo "Please enter at least 1 number"
-        playPlaylists()
+        playPlaylists(mpvCtx)
         return
 
     for index, choice in chosenPlaylists:
@@ -180,39 +154,35 @@ proc playPlaylists*() =
             # try to convert input to numbers
             if parseInt(choice) < 1:
                 utils.showMessage("Invalid option detected. Please only enter valid numbers.", utils.MessageType.WARN)
-                playPlaylists()
+                playPlaylists(mpvCtx)
                 return
 
             cleanedChosenPlaylists.add(parseInt(choice) - 1)
         except ValueError:
             utils.showMessage("Invalid option detected. Please only enter numbers.", utils.MessageType.WARN)
-            playPlaylists()
+            playPlaylists(mpvCtx)
             return
 
-    var command = "mpv"
+    var command = ""
 
     for index, playlist in playlists:
         if cleanedChosenPlaylists.find(index) < 0:
             continue
 
-        command &= " " & utils.cleanFilePath(playlist.link)
+        if len(command) > 0:
+            command &= " "
 
-    command &= &" --no-video {utils.scriptOpts}"
+        command &= utils.cleanFilePath(playlist.link)
 
     if utils.getYesNoAnswer("Would you like to shuffle the playlists?"):
-        command &= " --shuffle"
+        mpvCtx.set_option("shuffle", "yes")
 
     if utils.getYesNoAnswer("Loop playlists?"):
-        command &= " --loop-playlist"
+        mpvCtx.set_option("loop-playlist", "yes")
 
     displayPlayerControls()
 
-    # todo this command (mpv) will only work on Linux (and maybe Mac)
-    if execShellCmd(command) != 0:
-        # this will save the program, in the future we can consider
-        # not stopping it from running and allow the user to choose
-        # a playlist again
-        utils.criticalError("Error while trying to run MPV command")
+    mpvCtx.command("loadfile", command)
 
 proc addPlaylist*() =
     stdout.write("Please enter a name for the new playlist(type cancel to cancel): ")

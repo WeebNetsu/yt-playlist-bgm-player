@@ -1,27 +1,57 @@
+import std/strformat
+import pkg/[cligen, mpv]
 from std/os import paramCount
-import pkg/cligen, std/strformat
 from std/sequtils import map
 from std/random import randomize
 
-import utils, player
+import utils, player, mpvconf
 
 # if the user ctrl+c out of the application
-system.setControlCHook(proc() {.noconv.} = criticalError("Unexpected exit! (Please use 'q' instead)"))
+# todo make it quit safely
+system.setControlCHook(proc() {.noconv.} = utils.criticalError("Unexpected exit! (Please use 'q' instead)"))
 
 randomize()
 
-proc main(playlists: seq[int], random = false, shuffle = false,
-        loop = false, list = false) =
+proc main(playlists: seq[int], shuffle = false, loop = false, list = false) =
+    # check to make sure that the MPV dependency is installed
+    if os.findExe("mpv") == "":
+        criticalError("Dependency \"MPV\" was not found on your system, please install it.")
+
+    if os.findExe("yt-dlp") == "":
+        utils.showMessage(
+            "Dependency \"yt-dlp\" was not found on your system, you cannot play music from YouTube without it.\n\tInstall it with `pip install yt-dlp`",
+            utils.MessageType.WARN
+        )
+
     const menuOptions: array[5, string] = ["Play Playlists", "Add Playlist",
             "Edit Playlist", "Remove Playlist", "Help"]
 
     utils.showMessage("Welcome!", utils.MessageType.SUCCESS)
 
-    # if setup fails, we will not run the program
-    var running: bool = utils.setup()
+    # Create the MPV context to use MPV
+    let mpvCtx = mpvconf.initMpvCtx(shuffle, loop)
+
+    var
+        # if setup fails, we will not run the program
+        running: bool = utils.setup()
+        playing: bool = false
+        # MPV playing options
+        paused: bool = false
+        muted: bool = false
 
     while running:
-        if paramCount() == 0:
+        if playing:
+            let event = mpvCtx.wait_event(10000)
+
+            if not mpvconf.manageMPVKeyPress(mpvCtx, paused, muted):
+                break
+
+            if event.event_id == mpv.EVENT_SHUTDOWN:
+                break
+
+            continue
+
+        if os.paramCount() == 0:
             let choice = utils.getSelectableOption("", menuOptions)
 
             case choice:
@@ -29,7 +59,8 @@ proc main(playlists: seq[int], random = false, shuffle = false,
                     running = false
                 of 1:
                     utils.showMessage("Play Playlist", utils.MessageType.NOTICE)
-                    player.playPlaylists()
+                    player.playPlaylists(mpvCtx)
+                    playing = true
                 of 2:
                     utils.showMessage("Add Playlist", utils.MessageType.NOTICE)
                     player.addPlaylist()
@@ -55,29 +86,29 @@ proc main(playlists: seq[int], random = false, shuffle = false,
 
             # when a user decides to use the random flag, they cannot specify what playlists to play
             # randomly. To play specific playlists randomly, they can use the shuffle flag
-            if random:
-                # if len(playlists) > 0:
-                #     if playlists.find(0) >= 0:
-                #         utils.showMessage("0 is not a valid playlist number", utils.MessageType.WARN)
-                #         break
-
-                player.instantPlayPlaylists([], true, true, true)
+            # if random:
+            #     playing = true
+            #     player.instantPlayPlaylists(mpvCtx, [])
 
             if len(playlists) > 0:
                 if playlists.find(0) >= 0:
                     utils.showMessage("0 is not a valid playlist number", utils.MessageType.WARN)
                     break
 
-                player.instantPlayPlaylists(map(playlists, proc(
-                        val: int): int = val - 1), shuffle, loop)
+                playing = true
+                player.instantPlayPlaylists(mpvCtx, map(playlists, proc(val: int): int = val - 1))
 
-            running = false
+
+            if not playing:
+                running = false
+
+    mpv.terminate_destroy(mpvCtx)
 
     utils.showMessage("\nGoodbye!", utils.MessageType.NOTICE)
 
-dispatch(main, help = {
+cligen.dispatch(main, help = {
     "playlists": "Selected playlist(s) to play",
-    "random": "Play all your playlists in random order",
+    # "random": "Play all your playlists in random order",
     "shuffle": "Enable playlist shuffling",
     "loop": "Enable playlist looping",
     "list": "Return list of available playlists",
