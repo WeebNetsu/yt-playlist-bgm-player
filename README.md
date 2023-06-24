@@ -1,6 +1,6 @@
 # YouTube Playlist BGM Player
 
-This is a basic background music player made with Nim to play YouTube Playlists in the background. It is focused on being very light weight and easily accessable, even if you don't have a Desktop Enviroment or Window Manager.
+This is a basic background music player made with Nim to play YouTube Playlists in the background. It is focused on being very light weight and easily accessible, even if you don't have a Desktop Environment or Window Manager.
 
 Notes:
 

@@ -98,7 +98,6 @@ proc main(playlists: seq[int], shuffle = false, loop = false, list = false) =
                 playing = true
                 player.instantPlayPlaylists(mpvCtx, map(playlists, proc(val: int): int = val - 1))
 
-
             if not playing:
                 running = false
 

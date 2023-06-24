@@ -181,6 +181,8 @@ proc playPlaylists*(mpvCtx: auto) =
         mpvCtx.set_option("loop-playlist", "yes")
 
     displayPlayerControls()
+    utils.showMessage(command)
+    utils.showMessage("command")
 
     mpvCtx.command("loadfile", command)
 
