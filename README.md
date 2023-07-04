@@ -2,38 +2,28 @@
 
 This is a basic background music player made with Nim to play YouTube Playlists in the background. It is focused on being very light weight and easily accessible, even if you don't have a Desktop Environment or Window Manager.
 
-Notes:
-
-<ul>
-    <!-- it may have Mac support, but I don't have a Mac to test it on -->
-    <li>This currently only tested on Linux (it probably works on Mac), I'm planning to give it support for other OSs in the future.</li>
-    <li>Looking for the C++ version? <a href="https://github.com/WeebNetsu/yt-playlist-bgm-player/tree/cpp" target="_blank">Click here</a>. Take note that it is no longer being developed.</li>
-</ul>
+Looking for the C++ version? [Click here](https://github.com/WeebNetsu/yt-playlist-bgm-player/tree/cpp). Take note that it is no longer being developed.
 
 ## Content
 
-<ul>
-    <li><a href="#howToRun">How to install and run</a></li>
-    <li><a href="#howToUpdate">How to update</a></li>
-    <li><a href="#compilingTheCode">Compiling the code</a></li>
-    <li><a href="#controls">Controls</a></li>
-    <li><a href="#thePlaylistFile">The playlist file</a></li>
-    <li><a href="#features">Features</a></li>
-    <ul>
-        <li><a href="#playingPlaylists">Playing Playlists</a></li>
-        <li><a href="#addingPlaylists">Adding Playlists</a></li>
-        <li><a href="#editingPlaylists">Editing Playlists</a></li>
-        <li><a href="#deletingPlaylists">Deleting Playlists</a></li>
-        <li><a href="#shufflingPlaylists">Shuffling Playlists</a></li>
-    </ul>
-    <li><a href="#flags">Flags</a></li>
-</ul>
+- [Running and Installing](#running-and-installing)
+  - [Install](#install)
+  - [Run](#run)
+- [How to update](#how-to-update)
+- [Compiling the code](#compiling-the-code)
+- [Controls](#controls)
+- [The playlist file](#the-playlist-file)
+- [Features](#features)
+  - [Playing Playlists](#playing-playlists)
+  - [Adding Playlists](#adding-playlists)
+  - [Editing Playlists](#editing-playlists)
+  - [Deleting Playlists](#deleting-playlists)
+  - [Shuffling Playlists](#shuffling-playlists)
+- [Flags](#flags)
 
-<span id="howToRun"></span>
+## Running and Installing
 
-## How to install and run
-
-_Note: You should have a stable internet connection to use YouTube playlist player._
+_Note: You should have a stable internet connection to use YouTube playlist player with YouTube playlists._
 
 ### Install
 
@@ -43,7 +33,7 @@ _Note: You should have a stable internet connection to use YouTube playlist play
 
 #### From Source
 
-Clone or download the files run this in the project root directory: `nimble install`<br>
+Clone or download the files run this in the project root directory: `nimble install`
 
 ### Run
 
@@ -62,8 +52,6 @@ There are 2 ways to run this software, with or without flags. Without any flags 
 
 `ytbgmplayer --list` - list all available playlists, if this flag is used, no other flags are allowed
 
-<span id="howToUpdate"></span>
-
 ## How to update
 
 ### AUR
@@ -72,123 +60,66 @@ You can use whichever AUR package manager you prefer to update the package
 
 ### From Source
 
-Follow all the steps as in _install_.
-
-<span id="compilingTheCode"></span>
+Follow all the steps as in [install](#from-source).
 
 ## Compiling the code
 
 If you want to compile the source code yourself, you'll need the dependencies listed below.
 
-To compile the code: `nimble build -d:release`
-To run the code: `nimble run`
-
-<span id="dependencies"></span>
+To compile the code (for release): `nimble build -d:release`
+To compile the code (for debugging): `nimble build`
+To run the code (debugging): `nimble run`
 
 ### Dependencies
 
-<ul>
-<li><a href="https://nim-lang.org" target="_blank">Nim</a> <small>(only if compiling from source)</small></li>
-<li><a href="https://github.com/nim-lang/nimble" target="_blank">Nimble</a> <small>(only if compiling from source)</small></li>
-<li>The <b>latest</b> version of <a href="https://mpv.io/installation/" target="_blank">mpv</a> (Debian/Ubuntu-based users will have to add a repository and install the latest version: add-apt-repository ppa:mc3man/mpv-tests -y)</li>
-<!-- less - because I don't know how to replicate it with C++ yet -->
-<li><a href="https://github.com/yt-dlp/yt-dlp" target="_blank">yt-dlp</a></li>
-</ul>
-
-<span id="controls"></span>
+- [Nim](https://nim-lang.org) _(only if compiling from source)_
+- [Nimble](https://github.com/nim-lang/nimble) _(only if compiling from source)_
+- The <b>latest</b> version of [mpv](https://mpv.io/installation/). (Debian/Ubuntu-based users will have to add a repository and install the latest version: `add-apt-repository ppa:mc3man/mpv-tests -y`)
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp)
 
 ## Controls
 
-<table>
-    <tr>
-        <th>Action</th>
-        <th>Key</th>
-    </tr>
-    <tr>
-        <td>Pause</td>
-        <td>Space</td>
-    </tr>
-    <tr>
-        <td>Mute</td>
-        <td>m</td>
-    </tr>
-    <tr>
-        <td>Skip 10 Seconds</td>
-        <td>Right Arrow</td>
-    </tr>
-    <tr>
-        <td>Rewind 10 Seconds</td>
-        <td>Left Arrow</td>
-    </tr>
-    <tr>
-        <td>Skip 1 Minute</td>
-        <td>Up Arrow</td>
-    </tr>
-    <tr>
-        <td>Rewind 1 Minute</td>
-        <td>Down Arrow</td>
-    </tr>
-    <tr>
-        <td>Next Song</td>
-        <td>></td>
-    </tr>
-    <tr>
-        <td>Previous Song</td>
-        <td><</td>
-    </tr>
-    <tr>
-        <td>Stop</td>
-        <td>q</td>
-    </tr>
-</table>
-
-<span id="thePlaylistFile"></span>
+| Action            | Key         |
+| ----------------- | ----------- |
+| Pause             | Space       |
+| Mute              | m           |
+| Skip 10 Seconds   | Right Arrow |
+| Rewind 10 Seconds | Left Arrow  |
+| Skip 1 Minute     | Up Arrow    |
+| Rewind 1 Minute   | Down Arrow  |
+| Next Song         | >           |
+| Previous Song     | <           |
+| Quit              | q           |
 
 ## The Playlist File
 
 The playlist file (also known as the save file) is stored in `$HOME/.config/ytbgmpcli/playlists.json`, this is where all the playlists and their related details are stored.
 
-<span id="features"></span>
-
 ## Features
-
-<span id="playingPlaylists"></span>
 
 ### Playing Playlists
 
 You can play playlists from either on YouTube or your current machine (locally).
 
-<span id="addingPlaylists"></span>
-
 ### Adding Playlists
 
-You can add both playlistst from YouTube and from your machine. To add a playlist from YouTube, just copy the link to the playlist and when you have to insert the playlist link in th "Add Playlist" option, just paste the link. When you want to add a playlist from your machine (locally), create a folder, put all the music in there that you want in the playlist, navigate your terminal to that folder (cd /path/to/folder), when inside the folder type the command "pwd" and copy the output. When you have to add the location of the file in "Add Playlist", just paste the copied output into the input. Done.
-
-<span id="editingPlaylists"></span>
+You can add both playlists from YouTube and from your machine. To add a playlist from YouTube, just copy the link to the playlist and when you have to insert the playlist link in th "Add Playlist" option, just paste the link. When you want to add a playlist from your machine (locally), create a folder, put all the music in there that you want in the playlist, navigate your terminal to that folder (cd /path/to/folder), when inside the folder type the command "pwd" and copy the output. When you have to add the location of the file in "Add Playlist", just paste the copied output into the input. Done.
 
 ### Editing Playlists
 
 You can edit your playlist details, such as the playlist name and the playlist location/link.
 
-<span id="deletingPlaylists"></span>
-
 ### Deleting Playlists
 
 Once you have listened too much to a playlist, it is time to delete it. You can easily do that by choosing the delete option.
-
-<span id="shufflingPlaylists"></span>
 
 ### Shuffling Playlists
 
 If playing the playlist in it's normal order (YouTube: The way you ordered the playlist | Local: A-Z) then you can shuffle it and enjoy yourself.
 
-<span id="flags"></span>
-
 ## Flags
 
 If you don't want to use the interface, you can use flags to do some of the things you need to do.
-
-<span id="thePlaylistFlag"></span>
 
 ### The playlist flag
 
@@ -196,35 +127,10 @@ This flag is used to run a playlist without opening the interface, this can be d
 
 ### All other flags
 
-<table>
-    <tr>
-        <th>Flag</th>
-        <th>Short</th>
-        <th>Action</th>
-    </tr>
-    <tr>
-        <td>--help</td>
-        <td>-h</td>
-        <td>Displays help</td>
-    </tr>
-    <tr>
-        <td>--list</td>
-        <td>N/A</td>
-        <td>Displays all playlists</td>
-    </tr>
-    <tr>
-        <td>--random</td>
-        <td>-r</td>
-        <td>Play all your playlists in random order</td>
-    </tr>
-    <tr>
-        <td>--shuffle</td>
-        <td>-s</td>
-        <td>Shuffle playlists</td>
-    </tr>
-    <tr>
-        <td>--loop</td>
-        <td>-l</td>
-        <td>Loop playlists</td>
-    </tr>
-</table>
+| Flag      | Short | Action                                  |
+| --------- | ----- | --------------------------------------- |
+| --help    | -h    | Displays help                           |
+| --list    | N/A   | Displays all playlists                  |
+| --random  | -r    | Play all your playlists in random order |
+| --shuffle | -s    | Shuffle playlists                       |
+| --loop    | -l    | Loop playlists                          |
