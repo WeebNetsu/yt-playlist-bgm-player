@@ -1,14 +1,3 @@
-main
-
-.idea/
-.vscode/
-build/
-ignore/
-tmp/
-pkg/
-yt-playlist-bgm-player/
-yt-bgm-player-git-*
-ytbgmplayer
-ytbgmplayer-git-*
-pkg/
-yt-playlist*
+# https://dart.dev/guides/libraries/private-files
+# Created by `dart pub`
+.dart_tool/
