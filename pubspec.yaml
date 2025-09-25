@@ -8,7 +8,7 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
-  path: ^1.9.0
+  mpv_dart: ^0.0.1
 
 dev_dependencies:
   lints: ^6.0.0
