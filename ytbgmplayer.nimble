@@ -10,7 +10,7 @@ bin           = @["ytbgmplayer"]
 
 # Dependencies
 
-requires "nim >= 1.6.6 & < 2.0.0"
+requires "nim >= 2.2.4"
 requires "cligen >= 1.5.23"
 requires "mpv >= 0.2.0"
 requires "ncurses >= 1.0.2"

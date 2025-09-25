@@ -74,8 +74,9 @@ To run the code (debugging): `nimble run`
 
 - [Nim](https://nim-lang.org) _(only if compiling from source)_
 - [Nimble](https://github.com/nim-lang/nimble) _(only if compiling from source)_
-- The <b>latest</b> version of [mpv](https://mpv.io/installation/). (Debian/Ubuntu-based users will have to add a repository and install the latest version: `add-apt-repository ppa:mc3man/mpv-tests -y`)
-- [yt-dlp](https://github.com/yt-dlp/yt-dlp)
+- [mpv](https://mpv.io/installation/)
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) _(add to PATH)_
+- [libmpv-dev](https://community.linuxmint.com/software/view/libmpv-dev)
 
 ## Controls
 
