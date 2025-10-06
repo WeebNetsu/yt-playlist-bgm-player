@@ -1,5 +1,5 @@
 from std/os import findExe
-import std/strformat
+import std/[strformat, osproc, strutils]
 import pkg/mpv
 
 import utils
@@ -84,3 +84,47 @@ proc manageMPVKeyPress*(mpvCtx: auto, paused: var bool, muted: var bool): bool =
     else:
         return true
     return true
+
+
+proc listenToPlayerctl*(mpvCtx: auto, paused: var bool, muted: var bool) {.thread.} =
+    let p = startProcess("playerctl", args = @["--follow"], options = {poUsePath, poStdErrToStdOut, poEvalCommand})
+    defer: close(p)
+
+    for line in osproc.lines(p.outputStream):
+        let cmd = line.strip()
+        case cmd
+        of "PlayPause":
+            if paused:
+                checkMpvError(mpvCtx.set_option_string("pause", "no"))
+            else:
+                checkMpvError(mpvCtx.set_option_string("pause", "yes"))
+            paused = not paused
+        of "Next":
+            mpvCtx.command("playlist-next", "force")
+        of "Previous":
+            mpvCtx.command("playlist-prev", "force")
+        of "Stop":
+            mpvCtx.command("stop")
+        else:
+            echo "Unhandled playerctl event: ", cmd
+
+# proc playerctlListener*(mpvCtx: auto, paused: ptr bool, muted: ptr bool) {.thread.} =
+#     let p = startProcess("playerctl", args = @["--follow"], options = {poUsePath, poStdErrToStdOut, poEvalCommand})
+#     defer: close(p)
+#     for line in lines(p.outputStream):
+#         let cmd = line.strip()
+#         case cmd
+#         of "PlayPause":
+#             if paused[]:
+#                 checkMpvError(mpvCtx.set_option_string("pause", "no"))
+#             else:
+#                 checkMpvError(mpvCtx.set_option_string("pause", "yes"))
+#             paused[] = not paused[]
+#         of "Next":
+#             mpvCtx.command("playlist-next", "force")
+#         of "Previous":
+#             mpvCtx.command("playlist-prev", "force")
+#         of "Stop":
+#             mpvCtx.command("stop")
+#         else:
+#             echo "Unhandled playerctl event: ", cmd

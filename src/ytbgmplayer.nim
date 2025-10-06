@@ -1,5 +1,5 @@
-import std/strformat
-import pkg/[cligen, mpv]
+import std/[strformat]
+import pkg/[cligen, mpv, weave]
 from std/os import paramCount
 from std/sequtils import map
 from std/random import randomize
@@ -30,6 +30,7 @@ proc main(playlists: seq[int], shuffle = false, loop = false, list = false) =
 
     # Create the MPV context to use MPV
     let mpvCtx = mpvconf.initMpvCtx(shuffle, loop)
+    weave.init(weave.Weave)
 
     var
         # if setup fails, we will not run the program
@@ -38,6 +39,9 @@ proc main(playlists: seq[int], shuffle = false, loop = false, list = false) =
         # MPV playing options
         paused: bool = false
         muted: bool = false
+
+
+    let playerCtlListner = weave.spawn mpvconf.listenToPlayerctl(mpvCtx, paused, muted)
 
     while running:
         if playing:
@@ -48,6 +52,7 @@ proc main(playlists: seq[int], shuffle = false, loop = false, list = false) =
 
             if event.event_id == mpv.EVENT_SHUTDOWN:
                 break
+
 
             continue
 
@@ -101,6 +106,8 @@ proc main(playlists: seq[int], shuffle = false, loop = false, list = false) =
             if not playing:
                 running = false
 
+    weave.sync(playerCtlListner)
+    weave.exit(weave.Weave)
     mpv.terminate_destroy(mpvCtx)
 
     utils.showMessage("\nGoodbye!", utils.MessageType.NOTICE)
